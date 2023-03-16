@@ -1,5 +1,5 @@
 
-URL="http://localhost:8443/v1/waas/proxy/pool"
+URL="http://localhost:8443/v1/waas/proxy/pools"
 
 POOL_ID=$(uuidgen)
 
