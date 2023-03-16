@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/coinbase-samples/waas-proxy-go/config"
 	log "github.com/sirupsen/logrus"
 
 	poolspb "github.com/WaaS-Private-Preview-v1/waas-client-library/go/coinbase/cloud/pools/v1alpha1"
@@ -16,9 +17,9 @@ import (
 
 var poolServiceClient *clients.PoolServiceClient
 
-func InitPoolClient(ctx context.Context) (err error) {
+func initPoolClient(ctx context.Context, config config.AppConfig) (err error) {
 
-	endpoint, opts := waasClientDefaults("waas/pools")
+	endpoint, opts := waasClientDefaults(config, "waas/pools")
 
 	if poolServiceClient, err = clients.NewV1Alpha1PoolServiceClient(
 		ctx,

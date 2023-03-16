@@ -6,9 +6,14 @@ import (
 
 	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 func RegisterHandlers(config config.AppConfig, router *mux.Router) {
+
+	if err := initWaaSClients(config); err != nil {
+		log.Fatalf("Unable to init WaaS clients: %v", err)
+	}
 
 	registerDefaultHandlers(config, router)
 

@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"context"
+	"encoding/base64"
 	"net/url"
 
+	"github.com/coinbase-samples/waas-proxy-go/config"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/WaaS-Private-Preview-v1/waas-client-library/go/coinbase/cloud/clients"
@@ -10,7 +13,19 @@ import (
 
 const defaultWaaSApiHost = "https://cloud-api-beta.coinbase.com"
 
-func waasClientDefaults(endpointPath string) (endpoint string, opts []clients.Option) {
+func initWaaSClients(config config.AppConfig) error {
+
+	if err := initPoolClient(context.Background(), config); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func waasClientDefaults(
+	config config.AppConfig,
+	endpointPath string,
+) (endpoint string, opts []clients.Option) {
 
 	url, err := url.Parse(defaultWaaSApiHost)
 	if err != nil {
@@ -21,11 +36,14 @@ func waasClientDefaults(endpointPath string) (endpoint string, opts []clients.Op
 
 	endpoint = url.String()
 
-	// Looks for env vars: COINBASE_CLOUD_API_KEY_NAME, COINBASE_CLOUD_API_PRIVATE_KEY
+	apiPrivateKey, err := base64.StdEncoding.DecodeString(config.ApiPrivateKey)
+	if err != nil {
+		log.Fatalf("Cannot base64 decode private key: %v", err)
+	}
+
 	opts = []clients.Option{
-		clients.WithCloudAPIKeyAuth(clients.WithDefaultENVVariables()),
+		clients.WithCloudAPIKeyAuth(clients.WithAPIKey(config.ApiKeyName, string(apiPrivateKey))),
 	}
 
 	return
-
 }
