@@ -43,8 +43,6 @@ func main() {
 		port = os.Getenv("PORT")
 	}
 
-	log.Infof(fmt.Sprintf("starting listener on: %s", port))
-
 	headersOk := ghandlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
 	originsOk := ghandlers.AllowedOrigins([]string{"https://app.wenthemerge.xyz"})
 	methodsOk := ghandlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
@@ -56,9 +54,18 @@ func main() {
 		ReadTimeout:  60 * time.Second,
 	}
 
+	log.Infof(fmt.Sprintf("Starting listener on: %s", port))
+
 	go func() {
-		if err := srv.ListenAndServeTLS("server.crt", "server.key"); err != nil {
-			log.Fatal("ListenAndServe: ", err)
+		if app.IsLocalEnv() {
+			if err := srv.ListenAndServe(); err != nil {
+				log.Fatalf("ListenAndServe: %v", err)
+			}
+
+		} else {
+			if err := srv.ListenAndServeTLS("server.crt", "server.key"); err != nil {
+				log.Fatalf("ListenAndServeTLS: %v", err)
+			}
 		}
 	}()
 
