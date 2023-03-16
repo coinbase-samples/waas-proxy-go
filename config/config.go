@@ -25,8 +25,8 @@ func Setup(app *AppConfig) error {
 	viper.AutomaticEnv()
 	viper.AllowEmptyEnv(true)
 
-	viper.SetDefault("LOG_LEVEL", "warn")
-	viper.SetDefault("ENV", "local")
+	viper.SetDefault("LOG_LEVEL", "info")
+	viper.SetDefault("ENV_NAME", "local")
 	viper.SetDefault("COINBASE_CLOUD_API_KEY_NAME", "NOT_SET")
 	viper.SetDefault("COINBASE_CLOUD_API_PRIVATE_KEY", "NOT_SET")
 
