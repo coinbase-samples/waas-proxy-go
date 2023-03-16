@@ -38,7 +38,7 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Errorf("Unable to read CreatePool request body: %v", err)
-		httpStatusGatewayTimeout(w)
+		httpGatewayTimeout(w)
 		return
 	}
 
@@ -63,7 +63,7 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = writeJsonResponsWithStatusCreated(w, string(body)); err != nil {
+	if err = writeJsonResponseWithStatusCreated(w, body); err != nil {
 		log.Errorf("Cannot write pool response: %v", err)
 		httpBadGateway(w)
 		return

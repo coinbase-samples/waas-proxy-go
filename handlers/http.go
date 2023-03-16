@@ -13,12 +13,15 @@ func httpCreated(w http.ResponseWriter) {
 func httpBadGateway(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusBadGateway)
 }
+func httpOk(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusOK)
+}
 
 func httpBadRequest(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusBadRequest)
 }
 
-func httpStatusGatewayTimeout(w http.ResponseWriter) {
+func httpGatewayTimeout(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusGatewayTimeout)
 }
 
@@ -26,13 +29,21 @@ func jsonContentType(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 }
 
-func writeJsonResponsWithStatusCreated(w http.ResponseWriter, body string) (err error) {
+func writeJsonResponseWithStatusOk(w http.ResponseWriter, body []byte) (err error) {
+	return writeJsonResponseWithStatus(w, body, http.StatusOK)
+}
+
+func writeJsonResponseWithStatusCreated(w http.ResponseWriter, body []byte) (err error) {
+	return writeJsonResponseWithStatus(w, body, http.StatusCreated)
+}
+
+func writeJsonResponseWithStatus(w http.ResponseWriter, body []byte, status int) (err error) {
 	jsonContentType(w)
-	httpCreated(w)
-	_, err = io.WriteString(w, body)
+	w.WriteHeader(status)
+	_, err = io.WriteString(w, string(body))
 
 	if err != nil {
-		err = fmt.Errorf("Unable to write response body %w", err)
+		err = fmt.Errorf("Unable to write json response body %w", err)
 	}
 	return
 }
