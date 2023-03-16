@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/config"
+	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
 	poolspb "github.com/WaaS-Private-Preview-v1/waas-client-library/go/coinbase/cloud/pools/v1alpha1"
@@ -31,9 +32,33 @@ func initPoolClient(ctx context.Context, config config.AppConfig) (err error) {
 	return
 }
 
-func CreatePool(w http.ResponseWriter, r *http.Request) {
+func GetPool(w http.ResponseWriter, r *http.Request) {
 
-	ctx := context.Background()
+	vars := mux.Vars(r)
+
+	poolId, found := vars["poolId"]
+
+	if !found {
+		log.Error("Pool id not passed to GetPool")
+		httpBadRequest(w)
+		return
+	}
+
+	req := &poolspb.GetPoolRequest{
+		Name: fmt.Sprintf("pools/%s", poolId),
+	}
+
+	pool, err := poolServiceClient.GetPool(r.Context(), req)
+	if err != nil {
+		log.Errorf("Cannot get pool: %v", err)
+		httpBadGateway(w)
+		return
+	}
+
+	marshalPoolAndWriteResponse(w, pool, http.StatusOK)
+}
+
+func CreatePool(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -49,21 +74,29 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pool, err := poolServiceClient.CreatePool(ctx, req)
+	pool, err := poolServiceClient.CreatePool(r.Context(), req)
 	if err != nil {
 		log.Errorf("Cannot create pool: %v", err)
 		httpBadGateway(w)
 		return
 	}
 
-	body, err = json.Marshal(pool)
+	marshalPoolAndWriteResponse(w, pool, http.StatusCreated)
+}
+
+func marshalPoolAndWriteResponse(
+	w http.ResponseWriter,
+	pool *poolspb.Pool,
+	status int,
+) {
+	body, err := json.Marshal(pool)
 	if err != nil {
 		log.Errorf("Cannot marshal pool struct: %v", err)
 		httpBadGateway(w)
 		return
 	}
 
-	if err = writeJsonResponseWithStatusCreated(w, body); err != nil {
+	if err = writeJsonResponseWithStatus(w, body, status); err != nil {
 		log.Errorf("Cannot write pool response: %v", err)
 		httpBadGateway(w)
 		return
