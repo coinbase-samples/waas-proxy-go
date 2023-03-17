@@ -10,6 +10,7 @@ import (
 	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/api/iterator"
 
 	poolspb "github.com/WaaS-Private-Preview-v1/waas-client-library/go/coinbase/cloud/pools/v1alpha1"
 
@@ -30,6 +31,55 @@ func initPoolClient(ctx context.Context, config config.AppConfig) (err error) {
 		err = fmt.Errorf("Unable to init WaaS pool client: %w", err)
 	}
 	return
+}
+
+func ListPools(w http.ResponseWriter, r *http.Request) {
+
+	pageToken := r.URL.Query().Get("page_token")
+
+	req := &poolspb.ListPoolsRequest{}
+
+	if len(pageToken) > 0 {
+		req.PageToken = pageToken
+	}
+
+	iter := poolServiceClient.ListPools(r.Context(), req)
+
+	response := &poolspb.ListPoolsResponse{}
+	var nextPageToken string
+
+	for {
+		pool, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+
+		if err != nil {
+			log.Errorf("Cannot iterate pools: %v", err)
+			httpBadGateway(w)
+			return
+		}
+
+		nextPageToken = iter.PageInfo().Token
+
+		response.Pools = append(response.Pools, pool)
+	}
+
+	response.NextPageToken = nextPageToken
+
+	body, err := json.Marshal(response)
+	if err != nil {
+		log.Errorf("Cannot marshal list pools struct: %v", err)
+		httpBadGateway(w)
+		return
+	}
+
+	if err = writeJsonResponseWithStatus(w, body, http.StatusOK); err != nil {
+		log.Errorf("Cannot write list pools response: %v", err)
+		httpBadGateway(w)
+		return
+	}
+
 }
 
 func GetPool(w http.ResponseWriter, r *http.Request) {
