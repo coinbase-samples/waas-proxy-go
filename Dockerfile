@@ -4,9 +4,8 @@ ARG CACHEBUST=1
 
 RUN mkdir -p /build
 WORKDIR /build
-COPY . .
+COPY main /build/main
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main main.go
 
 RUN openssl genrsa -out server.key 2048
 RUN openssl ecparam -genkey -name secp384r1 -out server.key
