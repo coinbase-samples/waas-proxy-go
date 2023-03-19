@@ -12,20 +12,19 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 
-	poolspb "github.com/WaaS-Private-Preview-v1/waas-client-library/go/coinbase/cloud/pools/v1alpha1"
+	v1pools "github.cbhq.net/cloud/waas-client-library-go/gen/go/coinbase/cloud/pools/v1"
 
-	"github.com/WaaS-Private-Preview-v1/waas-client-library/go/coinbase/cloud/clients"
+	waasv1 "github.cbhq.net/cloud/waas-client-library-go/clients/v1"
 )
 
-var poolServiceClient *clients.PoolServiceClient
+var poolServiceClient *waasv1.PoolServiceClient
 
 func initPoolClient(ctx context.Context, config config.AppConfig) (err error) {
 
-	endpoint, opts := waasClientDefaults(config, "waas/pools")
+	opts := waasClientDefaults(config)
 
-	if poolServiceClient, err = clients.NewV1Alpha1PoolServiceClient(
+	if poolServiceClient, err = waasv1.NewPoolServiceClient(
 		ctx,
-		endpoint,
 		opts...,
 	); err != nil {
 		err = fmt.Errorf("Unable to init WaaS pool client: %w", err)
@@ -37,7 +36,7 @@ func ListPools(w http.ResponseWriter, r *http.Request) {
 
 	pageToken := r.URL.Query().Get("page_token")
 
-	req := &poolspb.ListPoolsRequest{}
+	req := &v1pools.ListPoolsRequest{}
 
 	if len(pageToken) > 0 {
 		req.PageToken = pageToken
@@ -45,9 +44,7 @@ func ListPools(w http.ResponseWriter, r *http.Request) {
 
 	iter := poolServiceClient.ListPools(r.Context(), req)
 
-	response := &poolspb.ListPoolsResponse{}
-	var nextPageToken string
-
+	var pools []*v1pools.Pool
 	for {
 		pool, err := iter.Next()
 		if err == iterator.Done {
@@ -60,12 +57,10 @@ func ListPools(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		nextPageToken = iter.PageInfo().Token
-
-		response.Pools = append(response.Pools, pool)
+		pools = append(pools, pool)
 	}
 
-	response.NextPageToken = nextPageToken
+	response := &v1pools.ListPoolsResponse{Pools: pools}
 
 	body, err := json.Marshal(response)
 	if err != nil {
@@ -79,7 +74,6 @@ func ListPools(w http.ResponseWriter, r *http.Request) {
 		httpBadGateway(w)
 		return
 	}
-
 }
 
 func GetPool(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +88,7 @@ func GetPool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := &poolspb.GetPoolRequest{
+	req := &v1pools.GetPoolRequest{
 		Name: fmt.Sprintf("pools/%s", poolId),
 	}
 
@@ -117,7 +111,7 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := &poolspb.CreatePoolRequest{}
+	req := &v1pools.CreatePoolRequest{}
 	if err := json.Unmarshal(body, req); err != nil {
 		log.Errorf("Unable to unmarshal CreatePool request: %v", err)
 		httpBadRequest(w)
@@ -136,7 +130,7 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 
 func marshalPoolAndWriteResponse(
 	w http.ResponseWriter,
-	pool *poolspb.Pool,
+	pool *v1pools.Pool,
 	status int,
 ) {
 	body, err := json.Marshal(pool)

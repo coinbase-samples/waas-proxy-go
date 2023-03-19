@@ -27,6 +27,8 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 
 	router.HandleFunc("/v1/waas/proxy/pools", ListPools).Methods(http.MethodGet)
 
+	//router.HandleFunc("/v1/waas/proxy/pools/{poolId}/wallets/{walletId}", GetWallet).Methods(http.MethodGet)
+
 	router.HandleFunc("/v1/waas/proxy/pools/{poolId}", GetPool).Methods(http.MethodGet)
 
 }
