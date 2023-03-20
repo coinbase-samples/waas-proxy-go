@@ -9,6 +9,7 @@ import (
 
 	waasv1 "github.cbhq.net/cloud/waas-client-library-go/clients/v1"
 	v1protocols "github.cbhq.net/cloud/waas-client-library-go/gen/go/coinbase/cloud/protocols/v1"
+	v1types "github.cbhq.net/cloud/waas-client-library-go/gen/go/coinbase/cloud/types/v1"
 
 	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/gorilla/mux"
@@ -31,6 +32,41 @@ func initProtocolClient(ctx context.Context, config config.AppConfig) (err error
 }
 
 func BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+
+	networkId, found := vars["networkId"]
+
+	if !found {
+		log.Error("Network id not passed to BroadcastTransaction")
+		httpBadRequest(w)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Errorf("Unable to read BroadcastTransaction request body: %v", err)
+		httpGatewayTimeout(w)
+		return
+	}
+
+	req := &v1protocols.BroadcastTransactionRequest{}
+	if err := json.Unmarshal(body, req); err != nil {
+		log.Errorf("Unable to unmarshal BroadcastTransaction request: %v", err)
+		httpBadRequest(w)
+		return
+	}
+
+	req.Network = fmt.Sprintf("networks/%s", networkId)
+
+	tx, err := protocolServiceClient.BroadcastTransaction(r.Context(), req)
+	if err != nil {
+		log.Errorf("Cannot broadcast tx: %v", err)
+		httpBadGateway(w)
+		return
+	}
+
+	marshalTransactionAndWriteResponse(w, tx, http.StatusCreated)
 
 }
 
@@ -64,22 +100,29 @@ func ConstructTransaction(w http.ResponseWriter, r *http.Request) {
 
 	tx, err := protocolServiceClient.ConstructTransaction(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot create pool: %v", err)
+		log.Errorf("Cannot construct transaction: %v", err)
 		httpBadGateway(w)
 		return
 	}
 
-	body, err = json.Marshal(tx)
+	marshalTransactionAndWriteResponse(w, tx, http.StatusCreated)
+}
+
+func marshalTransactionAndWriteResponse(
+	w http.ResponseWriter,
+	tx *v1types.Transaction,
+	status int,
+) {
+	body, err := json.Marshal(tx)
 	if err != nil {
-		log.Errorf("Cannot marshal transaction struct: %v", err)
+		log.Errorf("Cannot marshal tx struct: %v", err)
 		httpBadGateway(w)
 		return
 	}
 
-	if err = writeJsonResponseWithStatus(w, body, http.StatusCreated); err != nil {
-		log.Errorf("Cannot write create transaction response: %v", err)
+	if err = writeJsonResponseWithStatus(w, body, status); err != nil {
+		log.Errorf("Cannot write tx response: %v", err)
 		httpBadGateway(w)
 		return
 	}
-
 }
