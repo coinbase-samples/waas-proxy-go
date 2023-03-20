@@ -19,6 +19,10 @@ func initWaaSClients(config config.AppConfig) error {
 		return err
 	}
 
+	if err := initProtocolClient(context.Background(), config); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -31,6 +31,8 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 
 	router.HandleFunc("/v1/waas/proxy/pools/{poolId}", GetPool).Methods(http.MethodGet)
 
+	router.HandleFunc("/v1/waas/proxy/protocols/networks/{networkId}/txconstruct", ConstructTransaction).Methods(http.MethodPut)
+
 }
 
 func registerDefaultHandlers(config config.AppConfig, router *mux.Router) {
