@@ -23,6 +23,10 @@ func initWaaSClients(config config.AppConfig) error {
 		return err
 	}
 
+	if err := initMpcWalletClient(context.Background(), config); err != nil {
+		return err
+	}
+
 	return nil
 }
 

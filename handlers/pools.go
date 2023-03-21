@@ -34,13 +34,9 @@ func initPoolClient(ctx context.Context, config config.AppConfig) (err error) {
 
 func ListPools(w http.ResponseWriter, r *http.Request) {
 
-	pageToken := r.URL.Query().Get("page_token")
+	// TODO: This needs to page for the end client - iterator blasts through everything
 
 	req := &v1pools.ListPoolsRequest{}
-
-	if len(pageToken) > 0 {
-		req.PageToken = pageToken
-	}
 
 	iter := poolServiceClient.ListPools(r.Context(), req)
 
