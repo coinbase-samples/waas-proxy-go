@@ -7,11 +7,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	waasv1 "github.cbhq.net/cloud/waas-client-library-go/clients/v1"
-	v1protocols "github.cbhq.net/cloud/waas-client-library-go/gen/go/coinbase/cloud/protocols/v1"
-	v1types "github.cbhq.net/cloud/waas-client-library-go/gen/go/coinbase/cloud/types/v1"
-
 	"github.com/coinbase-samples/waas-proxy-go/config"
+	waasv1 "github.com/coinbase/waas-client-library-go/clients/v1"
+	v1protocols "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/protocols/v1"
+	v1types "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/types/v1"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )

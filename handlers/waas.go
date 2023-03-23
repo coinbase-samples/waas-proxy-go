@@ -7,11 +7,11 @@ import (
 	"github.com/coinbase-samples/waas-proxy-go/config"
 	log "github.com/sirupsen/logrus"
 
-	"github.cbhq.net/cloud/waas-client-library-go/auth"
-	"github.cbhq.net/cloud/waas-client-library-go/clients"
+	"github.com/coinbase/waas-client-library-go/auth"
+	"github.com/coinbase/waas-client-library-go/clients"
 )
 
-const defaultWaaSApiHost = "https://cloud-api-beta.coinbase.com"
+const defaultWaaSApiHost = "https://api.developer.coinbase.com"
 
 func initWaaSClients(config config.AppConfig) error {
 
@@ -47,6 +47,5 @@ func waasClientDefaults(
 			},
 		),
 	}
-
 	return
 }

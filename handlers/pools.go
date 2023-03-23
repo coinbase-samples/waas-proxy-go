@@ -12,9 +12,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 
-	v1pools "github.cbhq.net/cloud/waas-client-library-go/gen/go/coinbase/cloud/pools/v1"
+	v1pools "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/pools/v1"
 
-	waasv1 "github.cbhq.net/cloud/waas-client-library-go/clients/v1"
+	waasv1 "github.com/coinbase/waas-client-library-go/clients/v1"
 )
 
 var poolServiceClient *waasv1.PoolServiceClient

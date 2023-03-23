@@ -3,7 +3,7 @@ module github.com/coinbase-samples/waas-proxy-go
 go 1.19
 
 require (
-	github.cbhq.net/cloud/waas-client-library-go v0.0.0-20230317204442-e6d6752feaf6
+	github.com/coinbase/waas-client-library-go v0.0.0-20230321152517-535980ca7d4d
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/sirupsen/logrus v1.9.0
