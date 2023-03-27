@@ -32,9 +32,10 @@ type Balance struct {
 	Amount string `json:"amount,omitempty"`
 	// The resource name of the MPCWallet to which this Balance belongs.
 	// Format: pools/{pool}/mpcWallets/{mpcWallet}
-	MpcWallet string `json:"mpc_wallet,omitempty"`
-	Symbol    string `json:"symbol,omitempty"`
-	Decimals  int32  `json:"decimals,omitempty"`
+	MpcWallet  string                        `json:"mpc_wallet,omitempty"`
+	Symbol     string                        `json:"symbol,omitempty"`
+	Decimals   int32                         `json:"decimals,omitempty"`
+	Definition v1blockchain.Asset_Definition `json:"definition,omitempty"`
 }
 
 type ListBalancesResponse struct {
@@ -57,6 +58,13 @@ func initMpcWalletClient(ctx context.Context, config config.AppConfig) (err erro
 	); err != nil {
 		err = fmt.Errorf("Unable to init WaaS blockchain client: %w", err)
 	}
+	if mpcKeysServiceClient, err = waasv1.NewMPCKeyServiceClient(
+		ctx,
+		opts...,
+	); err != nil {
+		err = fmt.Errorf("Unable to init WaaS mpc key client: %w", err)
+	}
+
 	return
 }
 
@@ -114,12 +122,13 @@ func MpcWalletListBalances(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		filledBalances = append(filledBalances, &Balance{
-			Name:      b.Name,
-			Asset:     b.Asset,
-			Amount:    b.Amount,
-			MpcWallet: b.MpcWallet,
-			Symbol:    asset.AdvertisedSymbol,
-			Decimals:  asset.Decimals,
+			Name:       b.Name,
+			Asset:      b.Asset,
+			Amount:     b.Amount,
+			MpcWallet:  b.MpcWallet,
+			Symbol:     asset.AdvertisedSymbol,
+			Decimals:   asset.Decimals,
+			Definition: *asset.Definition,
 		})
 	}
 

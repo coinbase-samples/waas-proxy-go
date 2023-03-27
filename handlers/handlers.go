@@ -37,6 +37,8 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 
 	router.HandleFunc("/v1/waas/proxy/mpcwallets/networks/{networkId}/addresses/{addressId}", MpcWalletListBalances).Methods(http.MethodGet)
 
+	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}", MpcWalletListOperations).Methods(http.MethodGet)
+
 }
 
 func registerDefaultHandlers(config config.AppConfig, router *mux.Router) {
