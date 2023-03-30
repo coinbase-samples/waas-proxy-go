@@ -1,0 +1,53 @@
+[
+
+	{
+		"ParameterKey": "VpcId",
+		"ParameterValue": "vpc-00a782185f10e4e4b"
+	},
+
+	{
+		"ParameterKey": "SubnetId0",
+		"ParameterValue": "subnet-0c7f9f84ad6f406a4"
+	},
+
+	{
+		"ParameterKey": "SubnetId1",
+		"ParameterValue": "subnet-0e9d46d5c865b4613"
+	},
+
+	{
+		"ParameterKey": "CertificateArn",
+		"ParameterValue": "arn:aws:acm:us-east-1:992049605348:certificate/bfb4cc60-699f-4a7b-87cc-d7055014faed"
+	},
+
+	{
+		"ParameterKey": "HostedZoneId",
+		"ParameterValue": "Z053695733618RXZ2VSE3"
+	},
+
+	{
+		"ParameterKey": "EndpointHostname",
+		"ParameterValue": "waas-proxy-api.saworkshop.dev"
+	},
+
+	{
+		"ParameterKey": "LogLevel",
+		"ParameterValue": "info"
+	},
+
+	{
+		"ParameterKey": "ServiceImage",
+		"ParameterValue": "992049605348.dkr.ecr.us-east-1.amazonaws.com/sa-waas-dev"
+	},
+
+	{
+		"ParameterKey": "ApiKeyName",
+		"ParameterValue": "organizations/d62f5789-d62e-409d-b01d-76bfb28f849c/apiKeys/554a06a1-5a17-4ac8-a437-7f00d3972e98"
+	},
+
+	{
+		"ParameterKey": "ApiPrivateKeySeretsManagerArn",
+		"ParameterValue": "arn:aws:secretsmanager:us-east-1:992049605348:secret:sa-waas-dev-private-key-TNx8kK"
+	}
+
+]

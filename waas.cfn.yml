@@ -1,0 +1,401 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: WaaS API POC
+
+Parameters:
+
+  VpcId:
+    Type: String
+
+  SubnetId0:
+    Type: String
+
+  SubnetId1:
+    Type: String
+
+  ApiKeyName:
+    Type: String
+
+  LogLevel:
+    Type: String
+
+  ApiPrivateKeySeretsManagerArn:
+    Type: String
+
+  EnvName:
+    Type: String
+    Description: Environment name
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: Specify either dev or prod environment
+
+  HostedZoneId:
+    Type: String
+
+  EndpointHostname:
+    Type: String
+
+  CertificateArn:
+    Type: String
+    Description: The TLS certificate ARN
+    MinLength: 20
+    MaxLength: 2048
+
+  ServiceImage:
+    Type: String
+
+
+Resources:
+
+  EcrRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref AWS::StackName
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      EncryptionConfiguration:
+        EncryptionType: AES256
+      Tags:
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  ServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /${AWS::StackName}/api
+      RetentionInDays: 30
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref AWS::StackName
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 256
+      Memory: 512
+      NetworkMode: awsvpc
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: !Ref AWS::StackName
+          Image: !Ref ServiceImage
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8443
+          Environment:
+            - Name: ENV_NAME
+              Value: !Ref EnvName
+            - Name: LOG_LEVEL
+              Value: !Ref LogLevel
+            - Name: COINBASE_CLOUD_API_KEY_NAME
+              Value: !Ref ApiKeyName
+          Secrets:
+            - Name: COINBASE_CLOUD_API_PRIVATE_KEY
+              ValueFrom: !Ref ApiPrivateKeySeretsManagerArn
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref ServiceLogGroup
+              awslogs-stream-prefix: !Ref EnvName
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref TaskRolePolicy
+      Tags:
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  TaskRolePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !GetAtt ServiceLogGroup.Arn
+          - Effect: Allow
+            Action:
+              - kms:DescribeKey
+              - kms:GetPublicKey
+            Resource: '*'
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: get-secret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref ApiPrivateKeySeretsManagerArn
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Tags:
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref EcsCluster
+      ServiceName: !Ref AWS::StackName
+      DesiredCount: 1
+      LaunchType: FARGATE
+      TaskDefinition: !Ref TaskDefinition
+      LoadBalancers:
+        - ContainerName: !Ref AWS::StackName
+          ContainerPort: 8443
+          TargetGroupArn: !Ref TargetGroup
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !GetAtt ServiceSg.GroupId
+          Subnets:
+            - !Ref SubnetId0
+            - !Ref SubnetId1
+    DependsOn: AlbListener
+
+  ApiRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub ${EndpointHostname}.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt GlobalAccelerator.DnsName
+        HostedZoneId: Z2BJ6XQ5FK7U4H # magic value for Global Accelerator
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VpcId
+      Port: 8443
+      Protocol: HTTPS
+      Matcher:
+        HttpCode: 200
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /health
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: 10
+      TargetType: ip
+      Tags:
+        - Key: EnvName
+          Value: !Ref EnvName
+    DependsOn: Alb
+
+  EcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref AWS::StackName
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      Tags:
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  Alb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internal
+      Subnets:
+        - !Ref SubnetId0
+        - !Ref SubnetId1
+      SecurityGroups:
+        - !GetAtt AlbSg.GroupId
+      LoadBalancerAttributes:
+        - Key: deletion_protection.enabled
+          Value: false # enable
+        - Key: idle_timeout.timeout_seconds
+          Value: 60
+        - Key: routing.http.drop_invalid_header_fields.enabled
+          Value: true
+        - Key: routing.http2.enabled
+          Value: true
+        - Key: routing.http.x_amzn_tls_version_and_cipher_suite.enabled
+          Value: true
+      Tags:
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  AlbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref Alb
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+      SslPolicy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  AlbListenerCertificates:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref AlbListener
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+
+  GlobalAccelerator:
+    Type: AWS::GlobalAccelerator::Accelerator
+    Properties:
+      Name: !Ref AWS::StackName
+      Enabled: true
+      IpAddressType: IPV4
+      Tags:
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  GlobalAcceleratorListener:
+    Type: AWS::GlobalAccelerator::Listener
+    Properties:
+      AcceleratorArn: !Ref GlobalAccelerator
+      ClientAffinity: SOURCE_IP
+      PortRanges:
+        - FromPort: 443
+          ToPort: 443
+      Protocol: TCP
+
+  GlobalAcceleratorEndpointGroup:
+    Type: AWS::GlobalAccelerator::EndpointGroup
+    Properties:
+      EndpointGroupRegion: !Ref AWS::Region
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPort: 443
+      HealthCheckProtocol: TCP
+      ListenerArn: !Ref GlobalAcceleratorListener
+      ThresholdCount: 3
+      TrafficDialPercentage: 100
+      EndpointConfigurations:
+        - ClientIPPreservationEnabled: true
+          EndpointId: !Ref Alb
+
+  AlbSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Alb Security Group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          ToPort: 443
+          FromPort: 443
+      Tags:
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  AlbSgToServiceEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref AlbSg
+      IpProtocol: tcp
+      ToPort: 8443
+      FromPort: 8443
+      DestinationSecurityGroupId: !Ref ServiceSg
+
+  ServiceSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Service Security Group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref AlbSg
+          IpProtocol: tcp
+          ToPort: 8443
+          FromPort: 8443
+      Tags:
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  ServiceSgToPublicEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref ServiceSg
+      IpProtocol: tcp
+      ToPort: 443
+      FromPort: 443
+      CidrIp: 0.0.0.0/0
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AliasAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      EmailVerificationMessage: Hello {username}, welcome to WaaS POC - verification code is {####}
+      EmailVerificationSubject: WaaS - verify your email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 16
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+        EmailMessage: Hello {username}, welcome to WaaS POC - verification code is {####}
+        EmailSubject: WaaS - verify your email
+      UserPoolTags:
+        EnvName: !Ref EnvName
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      AllowedOAuthFlows:
+        - implicit
+        - code
+      AllowedOAuthFlowsUserPoolClient: true
+      CallbackURLs:
+        - !Sub https://${EndpointHostname}
+      AllowedOAuthScopes:
+        - profile
+        - email
+        - openid
+        - aws.cognito.signin.user.admin
+      SupportedIdentityProviders:
+        - COGNITO
