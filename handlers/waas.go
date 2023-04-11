@@ -11,9 +11,11 @@ import (
 	"github.com/coinbase/waas-client-library-go/clients"
 )
 
-const defaultWaaSApiHost = "https://api.developer.coinbase.com"
-
 func initWaaSClients(config config.AppConfig) error {
+
+	if err := initBlockchainClient(context.Background(), config); err != nil {
+		return err
+	}
 
 	if err := initPoolClient(context.Background(), config); err != nil {
 		return err

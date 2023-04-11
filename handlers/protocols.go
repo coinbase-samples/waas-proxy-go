@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/config"
@@ -30,33 +31,36 @@ func initProtocolClient(ctx context.Context, config config.AppConfig) (err error
 	return
 }
 
+type BroadcastRequest struct {
+	NetworkId         string `json:"network,omitempty"`
+	SignedTransaction string `json:"signedTransaction,omitempty"`
+}
+
 func BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-
-	networkId, found := vars["networkId"]
-
-	if !found {
-		log.Error("Network id not passed to BroadcastTransaction")
-		httpBadRequest(w)
-		return
-	}
-
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Errorf("Unable to read BroadcastTransaction request body: %v", err)
 		httpGatewayTimeout(w)
 		return
 	}
 
-	req := &v1protocols.BroadcastTransactionRequest{}
-	if err := json.Unmarshal(body, req); err != nil {
-		log.Errorf("Unable to unmarshal BroadcastTransaction request: %v", err)
+	br := &BroadcastRequest{}
+	if err := json.Unmarshal(body, br); err != nil {
+		log.Errorf("Unable to unmarshal Broadcast request: %v", err)
 		httpBadRequest(w)
 		return
 	}
 
-	req.Network = fmt.Sprintf("networks/%s", networkId)
+	log.Infof("original signed: %s", br.SignedTransaction)
+	encoded, _ := hex.DecodeString(br.SignedTransaction)
+
+	log.Infof("encoded tx: %s", encoded)
+	req := &v1protocols.BroadcastTransactionRequest{
+		Network: br.NetworkId,
+		Transaction: &v1types.Transaction{
+			RawSignedTransaction: encoded,
+		},
+	}
 
 	tx, err := protocolServiceClient.BroadcastTransaction(r.Context(), req)
 	if err != nil {
@@ -64,6 +68,7 @@ func BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
 		httpBadGateway(w)
 		return
 	}
+	log.Infof("broadcast result: %v", tx)
 
 	marshalTransactionAndWriteResponse(w, tx, http.StatusCreated)
 
@@ -81,7 +86,7 @@ func ConstructTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Errorf("Unable to read ConstructTransaction request body: %v", err)
 		httpGatewayTimeout(w)
