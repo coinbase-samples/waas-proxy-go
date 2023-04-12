@@ -92,6 +92,8 @@ Resources:
               Value: !Ref LogLevel
             - Name: COINBASE_CLOUD_API_KEY_NAME
               Value: !Ref ApiKeyName
+            - Name: APP_URL
+              Value: !Sub https://${EndpointHostname}
           Secrets:
             - Name: COINBASE_CLOUD_API_PRIVATE_KEY
               ValueFrom: !Ref ApiPrivateKeySeretsManagerArn
