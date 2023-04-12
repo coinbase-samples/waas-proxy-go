@@ -34,7 +34,7 @@ func HttpWriteJsonResponseWithStatusCreated(w http.ResponseWriter, body []byte) 
 	return HttpWriteJsonResponseWithStatus(w, body, http.StatusCreated)
 }
 
-func MarhsallAndWriteJsonResponseWithOk(w http.ResponseWriter, v any) error {
+func HttpMarhsallAndWriteJsonResponseWithOk(w http.ResponseWriter, v any) error {
 	return HttpMarhsallAndWriteJsonResponseWithStatus(w, v, http.StatusOK)
 }
 
