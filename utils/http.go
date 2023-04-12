@@ -5,7 +5,31 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
+
+func HttpReadBodyOrSendGatewayTimeout(w http.ResponseWriter, r *http.Request) ([]byte, error) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		HttpGatewayTimeout(w)
+	}
+
+	return body, err
+}
+
+func HttpPathVarOrSendBadRequest(w http.ResponseWriter, r *http.Request, name string) string {
+
+	vars := mux.Vars(r)
+
+	v, found := vars[name]
+
+	if !found {
+		HttpBadRequest(w)
+	}
+
+	return v
+}
 
 func HttpBadGateway(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusBadGateway)
