@@ -10,6 +10,7 @@ import (
 
 	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/coinbase-samples/waas-proxy-go/handlers"
+	"github.com/coinbase-samples/waas-proxy-go/waas"
 	ghandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -31,6 +32,10 @@ func main() {
 		if wait, err = time.ParseDuration(os.Getenv("GRACEFUL_TIMEOUT")); err != nil {
 			log.Fatalf("Invalid GRACEFUL_TIMEOUT: %s - err: %v", os.Getenv("GRACEFUL_TIMEOUT"), err)
 		}
+	}
+
+	if err := waas.InitClients(app); err != nil {
+		log.Fatalf("Unable to init WaaS clients: %v", err)
 	}
 
 	router := mux.NewRouter()
