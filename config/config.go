@@ -17,6 +17,12 @@ func (a AppConfig) IsLocalEnv() bool {
 	return a.Env == "local"
 }
 
+var appConfig *AppConfig
+
+func Get() *AppConfig {
+	return appConfig
+}
+
 func Setup(app *AppConfig) error {
 
 	viper.AddConfigPath(".")
@@ -41,6 +47,8 @@ func Setup(app *AppConfig) error {
 	if err != nil {
 		log.Debugf("Cannot parse env file %v", err)
 	}
+
+	appConfig = app
 
 	return nil
 }
