@@ -13,8 +13,6 @@ import (
 
 func ListNetworks(w http.ResponseWriter, r *http.Request) {
 
-	// TODO: This needs to page for the end client - iterator blasts through everything
-
 	req := &v1blockchain.ListNetworksRequest{}
 
 	iter := waas.GetClients().BlockchainService.ListNetworks(r.Context(), req)

@@ -19,8 +19,6 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: This needs to page for the end client - iterator blasts through everything
-
 	req := &v1blockchain.ListAssetsRequest{
 		Parent: fmt.Sprintf("networks/%s", networkId),
 	}
@@ -29,7 +27,7 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 	if len(filter) > 1 {
 		req.Filter = filter
 	}
-	log.Infof("requesting assets: %v", req)
+	log.Debugf("requesting assets: %v", req)
 
 	iter := waas.GetClients().BlockchainService.ListAssets(r.Context(), req)
 
