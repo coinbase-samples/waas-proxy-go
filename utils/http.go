@@ -34,11 +34,11 @@ func HttpWriteJsonResponseWithStatusCreated(w http.ResponseWriter, body []byte) 
 	return HttpWriteJsonResponseWithStatus(w, body, http.StatusCreated)
 }
 
-func HttpMarhsallAndWriteJsonResponseWithOk(w http.ResponseWriter, v any) error {
-	return HttpMarhsallAndWriteJsonResponseWithStatus(w, v, http.StatusOK)
+func HttpMarshalAndWriteJsonResponseWithOk(w http.ResponseWriter, v any) error {
+	return HttpMarshalAndWriteJsonResponseWithStatus(w, v, http.StatusOK)
 }
 
-func HttpMarhsallAndWriteJsonResponseWithStatus(w http.ResponseWriter, v any, status int) error {
+func HttpMarshalAndWriteJsonResponseWithStatus(w http.ResponseWriter, v any, status int) error {
 	body, err := json.Marshal(v)
 	if err != nil {
 		return err
