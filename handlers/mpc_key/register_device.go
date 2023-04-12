@@ -2,7 +2,6 @@ package mpc_key
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
@@ -13,10 +12,8 @@ import (
 
 func RegisterDevice(w http.ResponseWriter, r *http.Request) {
 
-	body, err := io.ReadAll(r.Body)
+	body, err := utils.HttpReadBodyOrSendGatewayTimeout(w, r)
 	if err != nil {
-		log.Errorf("Unable to read RegisterDevice request body: %v", err)
-		utils.HttpGatewayTimeout(w)
 		return
 	}
 

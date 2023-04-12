@@ -2,7 +2,6 @@ package mpc_key
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,7 +10,6 @@ import (
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	v1mpckeys "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/mpc_keys/v1"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,36 +18,28 @@ const (
 )
 
 func CreateSignature(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
 
-	poolId, found := vars["poolId"]
-	if !found {
-		log.Error("Pool id not passed to MpcWalletCreate")
-		utils.HttpBadRequest(w)
+	poolId := utils.HttpPathVarOrSendBadRequest(w, r, "poolId")
+	if len(poolId) == 0 {
 		return
 	}
 
-	deviceGroupId, found := vars["deviceGroupId"]
-	if !found {
-		log.Error("Device Group Id not passed to CreateSignature")
-		utils.HttpBadRequest(w)
+	deviceGroupId := utils.HttpPathVarOrSendBadRequest(w, r, "deviceGroupId")
+	if len(deviceGroupId) == 0 {
 		return
 	}
-	mpcKeyId, found := vars["mpcKeyId"]
-	if !found {
-		log.Error("MpcKeyId Id not passed to CreateSignature")
-		utils.HttpBadRequest(w)
+
+	mpcKeyId := utils.HttpPathVarOrSendBadRequest(w, r, "mpcKeyId")
+	if len(mpcKeyId) == 0 {
+		return
+	}
+
+	body, err := utils.HttpReadBodyOrSendGatewayTimeout(w, r)
+	if err != nil {
 		return
 	}
 
 	parent := fmt.Sprintf("pools/%s/deviceGroups/%s/mpcKeys/%s", poolId, deviceGroupId, mpcKeyId)
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		log.Errorf("Unable to read RegisterDevice request body: %v", err)
-		utils.HttpGatewayTimeout(w)
-		return
-	}
 
 	log.Debugf("parent: %s, body: %v", parent, string(body))
 

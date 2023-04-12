@@ -3,32 +3,23 @@ package protocol
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	v1protocols "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/protocols/v1"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
 func ConstructTransaction(w http.ResponseWriter, r *http.Request) {
 
-	vars := mux.Vars(r)
-
-	networkId, found := vars["networkId"]
-
-	if !found {
-		log.Error("Network id not passed to ConstructTransaction")
-		utils.HttpBadRequest(w)
+	networkId := utils.HttpPathVarOrSendBadRequest(w, r, "networkId")
+	if len(networkId) == 0 {
 		return
 	}
 
-	body, err := io.ReadAll(r.Body)
+	body, err := utils.HttpReadBodyOrSendGatewayTimeout(w, r)
 	if err != nil {
-		log.Errorf("Unable to read ConstructTransaction request body: %v", err)
-		utils.HttpGatewayTimeout(w)
 		return
 	}
 

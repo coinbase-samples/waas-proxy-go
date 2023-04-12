@@ -7,7 +7,6 @@ import (
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	v1mpcwallets "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/mpc_wallets/v1"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 )
@@ -20,12 +19,8 @@ func ListWallets(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: This needs to page for the end client - iterator blasts through everything
 
-	vars := mux.Vars(r)
-
-	poolId, found := vars["poolId"]
-	if !found {
-		log.Error("Network id not passed to MpcWalletList")
-		utils.HttpBadRequest(w)
+	poolId := utils.HttpPathVarOrSendBadRequest(w, r, "poolId")
+	if len(poolId) == 0 {
 		return
 	}
 

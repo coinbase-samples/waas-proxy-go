@@ -6,7 +6,6 @@ import (
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 
@@ -14,12 +13,9 @@ import (
 )
 
 func ListAssets(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
 
-	networkId, found := vars["networkId"]
-	if !found {
-		log.Error("networkId not passed to ListAssets")
-		utils.HttpBadRequest(w)
+	networkId := utils.HttpPathVarOrSendBadRequest(w, r, "networkId")
+	if len(networkId) == 0 {
 		return
 	}
 

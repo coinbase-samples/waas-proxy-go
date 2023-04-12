@@ -7,7 +7,6 @@ import (
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	v1mpckeys "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/mpc_keys/v1"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,19 +18,14 @@ type CreateDeviceGroupResponse struct {
 }
 
 func CreateDeviceGroup(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
 
-	poolId, found := vars["poolId"]
-	if !found {
-		log.Error("Pool id not passed to MpcWalletCreate")
-		utils.HttpBadRequest(w)
+	poolId := utils.HttpPathVarOrSendBadRequest(w, r, "poolId")
+	if len(poolId) == 0 {
 		return
 	}
 
-	deviceId, found := vars["deviceId"]
-	if !found {
-		log.Error("Device Id not passed to MpcWalletListOperations")
-		utils.HttpBadRequest(w)
+	deviceId := utils.HttpPathVarOrSendBadRequest(w, r, "deviceId")
+	if len(deviceId) == 0 {
 		return
 	}
 
@@ -45,6 +39,7 @@ func CreateDeviceGroup(w http.ResponseWriter, r *http.Request) {
 		utils.HttpBadGateway(w)
 		return
 	}
+
 	metadata, _ := resp.Metadata()
 
 	finalResp := &CreateDeviceGroupResponse{

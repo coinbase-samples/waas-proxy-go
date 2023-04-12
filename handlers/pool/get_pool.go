@@ -6,7 +6,6 @@ import (
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
 	v1pools "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/pools/v1"
@@ -14,13 +13,8 @@ import (
 
 func GetPool(w http.ResponseWriter, r *http.Request) {
 
-	vars := mux.Vars(r)
-
-	poolId, found := vars["poolId"]
-
-	if !found {
-		log.Error("Pool id not passed to GetPool")
-		utils.HttpBadRequest(w)
+	poolId := utils.HttpPathVarOrSendBadRequest(w, r, "poolId")
+	if len(poolId) == 0 {
 		return
 	}
 

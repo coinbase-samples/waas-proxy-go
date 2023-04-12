@@ -2,7 +2,6 @@ package mpc_wallet
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
@@ -20,10 +19,8 @@ type WalletResponse struct {
 
 func CreateWallet(w http.ResponseWriter, r *http.Request) {
 
-	body, err := io.ReadAll(r.Body)
+	body, err := utils.HttpReadBodyOrSendGatewayTimeout(w, r)
 	if err != nil {
-		log.Errorf("unable to read RegisterDevice request body: %v", err)
-		utils.HttpGatewayTimeout(w)
 		return
 	}
 

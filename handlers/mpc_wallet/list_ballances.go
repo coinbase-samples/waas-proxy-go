@@ -8,7 +8,6 @@ import (
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	v1blockchain "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/blockchain/v1"
 	v1mpcwallets "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/mpc_wallets/v1"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 )
@@ -40,19 +39,13 @@ func ListBalances(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: This needs to page for the end client - iterator blasts through everything
 
-	vars := mux.Vars(r)
-
-	networkId, found := vars["networkId"]
-	if !found {
-		log.Error("Network id not passed to MpcWalletListBalances")
-		utils.HttpBadRequest(w)
+	networkId := utils.HttpPathVarOrSendBadRequest(w, r, "networkId")
+	if len(networkId) == 0 {
 		return
 	}
 
-	addressId, found := vars["addressId"]
-	if !found {
-		log.Error("Address id not passed to MpcWalletListBalances")
-		utils.HttpBadRequest(w)
+	addressId := utils.HttpPathVarOrSendBadRequest(w, r, "addressId")
+	if len(addressId) == 0 {
 		return
 	}
 

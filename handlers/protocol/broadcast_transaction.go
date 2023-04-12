@@ -3,7 +3,6 @@ package protocol
 import (
 	"encoding/hex"
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
@@ -20,10 +19,8 @@ type broadcastRequest struct {
 
 func BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
 
-	body, err := io.ReadAll(r.Body)
+	body, err := utils.HttpReadBodyOrSendGatewayTimeout(w, r)
 	if err != nil {
-		log.Errorf("Unable to read BroadcastTransaction request body: %v", err)
-		utils.HttpGatewayTimeout(w)
 		return
 	}
 
