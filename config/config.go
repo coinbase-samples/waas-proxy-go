@@ -10,6 +10,7 @@ type AppConfig struct {
 	LogLevel      string `mapstructure:"LOG_LEVEL"`
 	ApiKeyName    string `mapstructure:"COINBASE_CLOUD_API_KEY_NAME"`
 	ApiPrivateKey string `mapstructure:"COINBASE_CLOUD_API_PRIVATE_KEY"`
+	AppUrl        string `mapstructure:"APP_URL"`
 }
 
 func (a AppConfig) IsLocalEnv() bool {
@@ -29,6 +30,7 @@ func Setup(app *AppConfig) error {
 	viper.SetDefault("ENV_NAME", "local")
 	viper.SetDefault("COINBASE_CLOUD_API_KEY_NAME", "NOT_SET")
 	viper.SetDefault("COINBASE_CLOUD_API_PRIVATE_KEY", "NOT_SET")
+	viper.SetDefault("APP_URL", "http://localhost")
 
 	err := viper.ReadInConfig()
 	if err != nil {
