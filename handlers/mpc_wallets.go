@@ -1,23 +1,17 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
-	waasv1 "github.com/coinbase/waas-client-library-go/clients/v1"
-
-	"github.com/coinbase-samples/waas-proxy-go/config"
 	v1blockchain "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/blockchain/v1"
 	v1mpcwallets "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/mpc_wallets/v1"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 )
-
-var mpcWalletServiceClient *waasv1.MPCWalletServiceClient
 
 type WalletResponse struct {
 	// The resource name of the Balance.
@@ -57,20 +51,6 @@ type ListBalancesResponse struct {
 	Balances []*Balance `json:"balances"`
 }
 
-func initMpcWalletClient(ctx context.Context, config config.AppConfig) error {
-	var e, err error
-	opts := waasClientDefaults(config)
-
-	if mpcWalletServiceClient, err = waasv1.NewMPCWalletServiceClient(
-		ctx,
-		opts...,
-	); err != nil {
-		e = fmt.Errorf("unable to init WaaS mpc wallet client: %w", err)
-	}
-
-	return e
-}
-
 func MpcWalletCreate(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
@@ -86,7 +66,7 @@ func MpcWalletCreate(w http.ResponseWriter, r *http.Request) {
 		httpBadRequest(w)
 		return
 	}
-	log.Infof("creating wallet: %v", req)
+	log.Debugf("creating wallet: %v", req)
 
 	resp, err := mpcWalletServiceClient.CreateMPCWallet(r.Context(), req)
 	if err != nil {
@@ -102,20 +82,10 @@ func MpcWalletCreate(w http.ResponseWriter, r *http.Request) {
 		DeviceGroup: metadata.GetDeviceGroup(),
 	}
 
-	body, err = json.Marshal(wallet)
-	if err != nil {
-		log.Errorf("cannot marshal create mpc wallet struct: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, wallet); err != nil {
+		log.Errorf("Cannot marshal and write create mpc wallet response: %v", err)
 		httpBadGateway(w)
-		return
 	}
-
-	log.Infof("create wallet final response: %s", string(body))
-	if err = writeJsonResponseWithStatus(w, body, http.StatusOK); err != nil {
-		log.Errorf("cannot write create mpc wallet response: %v", err)
-		httpBadGateway(w)
-		return
-	}
-
 }
 
 func MpcWalletGenerateAddress(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +102,7 @@ func MpcWalletGenerateAddress(w http.ResponseWriter, r *http.Request) {
 		httpBadRequest(w)
 		return
 	}
-	log.Infof("generating address: %v", req)
+	log.Debugf("generating address: %v", req)
 
 	resp, err := mpcWalletServiceClient.GenerateAddress(r.Context(), req)
 	if err != nil {
@@ -140,20 +110,11 @@ func MpcWalletGenerateAddress(w http.ResponseWriter, r *http.Request) {
 		httpBadGateway(w)
 		return
 	}
-	log.Infof("generating address raw response: %v", resp)
-	body, err = json.Marshal(resp)
-	if err != nil {
-		log.Errorf("Cannot marshal generating address struct: %v", err)
-		httpBadGateway(w)
-		return
-	}
+	log.Debugf("generating address raw response: %v", resp)
 
-	log.Infof("generating address result: %v", string(body))
-
-	if err = writeJsonResponseWithStatus(w, body, http.StatusOK); err != nil {
-		log.Errorf("Cannot write generating address response: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, resp); err != nil {
+		log.Errorf("Cannot marshal and write generating address response: %v", err)
 		httpBadGateway(w)
-		return
 	}
 
 }
@@ -194,19 +155,10 @@ func MpcWalletList(w http.ResponseWriter, r *http.Request) {
 
 	response := &ListWalletsResponse{Wallets: wallets}
 
-	body, err := json.Marshal(response)
-	if err != nil {
-		log.Errorf("Cannot marshal mpc wallet list balances struct: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, response); err != nil {
+		log.Errorf("Cannot marshal and write mpc wallet list response: %v", err)
 		httpBadGateway(w)
-		return
 	}
-
-	if err = writeJsonResponseWithStatus(w, body, http.StatusOK); err != nil {
-		log.Errorf("Cannot write list pools response: %v", err)
-		httpBadGateway(w)
-		return
-	}
-
 }
 
 func MpcAddressList(w http.ResponseWriter, r *http.Request) {
@@ -241,7 +193,7 @@ func MpcAddressList(w http.ResponseWriter, r *http.Request) {
 		MpcWallet: fmt.Sprintf("pools/%s/mpcWallets/%s", poolId, mpcWalletId),
 	}
 
-	log.Infof("calling listAddresses: %v", req)
+	log.Debugf("calling listAddresses: %v", req)
 	iter := mpcWalletServiceClient.ListAddresses(r.Context(), req)
 
 	var addresses []*v1mpcwallets.Address
@@ -259,22 +211,13 @@ func MpcAddressList(w http.ResponseWriter, r *http.Request) {
 		addresses = append(addresses, address)
 	}
 
-	log.Infof("found addresses: %v", addresses)
+	log.Debugf("found addresses: %v", addresses)
 	response := &ListAddressesResponse{Addresses: addresses}
 
-	body, err := json.Marshal(response)
-	if err != nil {
-		log.Errorf("Cannot marshal mpc wallet list balances struct: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, response); err != nil {
+		log.Errorf("Cannot marshal and write mpc address list response: %v", err)
 		httpBadGateway(w)
-		return
 	}
-
-	if err = writeJsonResponseWithStatus(w, body, http.StatusOK); err != nil {
-		log.Errorf("Cannot write list pools response: %v", err)
-		httpBadGateway(w)
-		return
-	}
-
 }
 
 func MpcWalletListBalances(w http.ResponseWriter, r *http.Request) {
@@ -343,16 +286,8 @@ func MpcWalletListBalances(w http.ResponseWriter, r *http.Request) {
 
 	response := &ListBalancesResponse{Balances: filledBalances}
 
-	body, err := json.Marshal(response)
-	if err != nil {
-		log.Errorf("Cannot marshal mpc wallet list balances struct: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, response); err != nil {
+		log.Errorf("Cannot marshal and write mpc wallet list balances response: %v", err)
 		httpBadGateway(w)
-		return
-	}
-
-	if err = writeJsonResponseWithStatus(w, body, http.StatusOK); err != nil {
-		log.Errorf("Cannot write list pools response: %v", err)
-		httpBadGateway(w)
-		return
 	}
 }

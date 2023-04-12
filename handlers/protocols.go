@@ -68,10 +68,12 @@ func BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
 		httpBadGateway(w)
 		return
 	}
-	log.Infof("broadcast result: %v", tx)
+	log.Debugf("broadcast result: %v", tx)
 
-	marshalTransactionAndWriteResponse(w, tx, http.StatusCreated)
-
+	if err := marhsallAndWriteJsonResponseWithOk(w, tx); err != nil {
+		log.Errorf("Cannot marshal and wite broadcast tx response: %v", err)
+		httpBadGateway(w)
+	}
 }
 
 func ConstructTransaction(w http.ResponseWriter, r *http.Request) {
@@ -109,24 +111,8 @@ func ConstructTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	marshalTransactionAndWriteResponse(w, tx, http.StatusCreated)
-}
-
-func marshalTransactionAndWriteResponse(
-	w http.ResponseWriter,
-	tx *v1types.Transaction,
-	status int,
-) {
-	body, err := json.Marshal(tx)
-	if err != nil {
-		log.Errorf("Cannot marshal tx struct: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, tx); err != nil {
+		log.Errorf("Cannot marshal and wite construct tx response: %v", err)
 		httpBadGateway(w)
-		return
-	}
-
-	if err = writeJsonResponseWithStatus(w, body, status); err != nil {
-		log.Errorf("Cannot write tx response: %v", err)
-		httpBadGateway(w)
-		return
 	}
 }

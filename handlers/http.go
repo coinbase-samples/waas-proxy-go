@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,6 +36,19 @@ func writeJsonResponseWithStatusOk(w http.ResponseWriter, body []byte) (err erro
 
 func writeJsonResponseWithStatusCreated(w http.ResponseWriter, body []byte) (err error) {
 	return writeJsonResponseWithStatus(w, body, http.StatusCreated)
+}
+
+func marhsallAndWriteJsonResponseWithOk(w http.ResponseWriter, v any) error {
+	return marhsallAndWriteJsonResponseWithStatus(w, v, http.StatusOK)
+}
+
+func marhsallAndWriteJsonResponseWithStatus(w http.ResponseWriter, v any, status int) error {
+	body, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	return writeJsonResponseWithStatus(w, body, status)
 }
 
 func writeJsonResponseWithStatus(w http.ResponseWriter, body []byte, status int) (err error) {

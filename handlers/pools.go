@@ -1,36 +1,17 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
-	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 
 	v1pools "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/pools/v1"
-
-	waasv1 "github.com/coinbase/waas-client-library-go/clients/v1"
 )
-
-var poolServiceClient *waasv1.PoolServiceClient
-
-func initPoolClient(ctx context.Context, config config.AppConfig) (err error) {
-
-	opts := waasClientDefaults(config)
-
-	if poolServiceClient, err = waasv1.NewPoolServiceClient(
-		ctx,
-		opts...,
-	); err != nil {
-		err = fmt.Errorf("Unable to init WaaS pool client: %w", err)
-	}
-	return
-}
 
 func ListPools(w http.ResponseWriter, r *http.Request) {
 
@@ -58,17 +39,9 @@ func ListPools(w http.ResponseWriter, r *http.Request) {
 
 	response := &v1pools.ListPoolsResponse{Pools: pools}
 
-	body, err := json.Marshal(response)
-	if err != nil {
-		log.Errorf("Cannot marshal list pools struct: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, response); err != nil {
+		log.Errorf("Cannot marshal and write list pools response: %v", err)
 		httpBadGateway(w)
-		return
-	}
-
-	if err = writeJsonResponseWithStatus(w, body, http.StatusOK); err != nil {
-		log.Errorf("Cannot write list pools response: %v", err)
-		httpBadGateway(w)
-		return
 	}
 }
 
@@ -95,7 +68,10 @@ func GetPool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	marshalPoolAndWriteResponse(w, pool, http.StatusOK)
+	if err := marhsallAndWriteJsonResponseWithOk(w, pool); err != nil {
+		log.Errorf("Cannot marshal and write get pool response: %v", err)
+		httpBadGateway(w)
+	}
 }
 
 func CreatePool(w http.ResponseWriter, r *http.Request) {
@@ -121,24 +97,8 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	marshalPoolAndWriteResponse(w, pool, http.StatusCreated)
-}
-
-func marshalPoolAndWriteResponse(
-	w http.ResponseWriter,
-	pool *v1pools.Pool,
-	status int,
-) {
-	body, err := json.Marshal(pool)
-	if err != nil {
-		log.Errorf("Cannot marshal pool struct: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, pool); err != nil {
+		log.Errorf("Cannot marshal and write create pool response: %v", err)
 		httpBadGateway(w)
-		return
-	}
-
-	if err = writeJsonResponseWithStatus(w, body, status); err != nil {
-		log.Errorf("Cannot write pool response: %v", err)
-		httpBadGateway(w)
-		return
 	}
 }

@@ -1,34 +1,15 @@
 package handlers
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 
-	waasv1 "github.com/coinbase/waas-client-library-go/clients/v1"
 	v1blockchain "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/blockchain/v1"
 )
-
-var blockchainServiceClient *waasv1.BlockchainServiceClient
-
-func initBlockchainClient(ctx context.Context, config config.AppConfig) (err error) {
-
-	opts := waasClientDefaults(config)
-
-	if blockchainServiceClient, err = waasv1.NewBlockchainServiceClient(
-		ctx,
-		opts...,
-	); err != nil {
-		err = fmt.Errorf("Unable to init WaaS pool client: %w", err)
-	}
-	return
-}
 
 func ListNetworks(w http.ResponseWriter, r *http.Request) {
 
@@ -56,17 +37,9 @@ func ListNetworks(w http.ResponseWriter, r *http.Request) {
 
 	response := &v1blockchain.ListNetworksResponse{Networks: networks}
 
-	body, err := json.Marshal(response)
-	if err != nil {
-		log.Errorf("Cannot marshal list pools struct: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, response); err != nil {
+		log.Errorf("Cannot marshal and write list networks response: %v", err)
 		httpBadGateway(w)
-		return
-	}
-
-	if err = writeJsonResponseWithStatus(w, body, http.StatusOK); err != nil {
-		log.Errorf("Cannot write list pools response: %v", err)
-		httpBadGateway(w)
-		return
 	}
 }
 
@@ -115,16 +88,8 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 	response := &v1blockchain.ListAssetsResponse{Assets: assets}
 
 	log.Debugf("raw listAssets response: %s", response.String())
-	body, err := json.Marshal(response)
-	if err != nil {
-		log.Errorf("Cannot marshal list pools struct: %v", err)
+	if err := marhsallAndWriteJsonResponseWithOk(w, response); err != nil {
+		log.Errorf("Cannot marshal and write list assets response: %v", err)
 		httpBadGateway(w)
-		return
-	}
-
-	if err = writeJsonResponseWithStatus(w, body, http.StatusOK); err != nil {
-		log.Errorf("Cannot write list pools response: %v", err)
-		httpBadGateway(w)
-		return
 	}
 }
