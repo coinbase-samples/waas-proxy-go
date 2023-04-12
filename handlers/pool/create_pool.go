@@ -1,7 +1,9 @@
 package pool
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
@@ -25,9 +27,9 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pool, err := waas.GetClients().PoolService.CreatePool(r.Context(), req)
+	pool, err := createPool(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot create pool: %v", err)
+		log.Error(err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -36,4 +38,15 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("Cannot marshal and write create pool response: %v", err)
 		utils.HttpBadGateway(w)
 	}
+}
+
+func createPool(
+	ctx context.Context,
+	req *v1pools.CreatePoolRequest,
+) (*v1pools.Pool, error) {
+	pool, err := waas.GetClients().PoolService.CreatePool(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot create pool: %w", err)
+	}
+	return pool, nil
 }
