@@ -44,14 +44,14 @@ func main() {
 	}
 
 	headersOk := ghandlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
-	originsOk := ghandlers.AllowedOrigins([]string{"https://app.wenthemerge.xyz"})
+	originsOk := ghandlers.AllowedOrigins([]string{app.AppUrl})
 	methodsOk := ghandlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 
 	srv := &http.Server{
 		Handler:      ghandlers.CORS(originsOk, headersOk, methodsOk)(router),
 		Addr:         fmt.Sprintf(":%s", port),
-		WriteTimeout: 60 * time.Second,
-		ReadTimeout:  60 * time.Second,
+		WriteTimeout: 120 * time.Second,
+		ReadTimeout:  120 * time.Second,
 	}
 
 	log.Infof(fmt.Sprintf("Starting listener on: %s", port))
