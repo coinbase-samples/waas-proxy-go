@@ -1,6 +1,7 @@
 package mpc_key
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -29,26 +30,40 @@ func CreateDeviceGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response, err := createDeviceGroup(r.Context(), poolId, deviceId)
+	if err != nil {
+		utils.HttpBadGateway(w)
+		log.Error(err)
+		return
+	}
+
+	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
+		log.Errorf("Cannot marshal and write create device group response: %v", err)
+		utils.HttpBadGateway(w)
+	}
+}
+
+func createDeviceGroup(
+	ctx context.Context,
+	poolId,
+	deviceId string,
+) (*CreateDeviceGroupResponse, error) {
+
 	req := &v1mpckeys.CreateDeviceGroupRequest{
 		Parent: fmt.Sprintf("pools/%s/device/%s", poolId, deviceId),
 	}
 
-	resp, err := waas.GetClients().MpcKeyService.CreateDeviceGroup(r.Context(), req)
+	resp, err := waas.GetClients().MpcKeyService.CreateDeviceGroup(ctx, req)
 	if err != nil {
-		log.Errorf("Cannot list mpc operations: %v", err)
-		utils.HttpBadGateway(w)
-		return
+		return nil, fmt.Errorf("Cannot list mpc operations: %", err)
 	}
 
 	metadata, _ := resp.Metadata()
 
-	finalResp := &CreateDeviceGroupResponse{
+	response := &CreateDeviceGroupResponse{
 		Operation:   resp.Name(),
 		DeviceGroup: metadata.GetDeviceGroup(),
 	}
 
-	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, finalResp); err != nil {
-		log.Errorf("Cannot marshal and write create device group response: %v", err)
-		utils.HttpBadGateway(w)
-	}
+	return response, nil
 }

@@ -1,6 +1,7 @@
 package mpc_key
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -22,20 +23,35 @@ func ListOperations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response, err := listOperations(r.Context(), poolId, deviceGroupId)
+	if err != nil {
+		utils.HttpBadGateway(w)
+		log.Error(err)
+		return
+	}
+
+	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
+		log.Errorf("Cannot marshal and write mpc operations response: %v", err)
+		utils.HttpBadGateway(w)
+	}
+}
+
+func listOperations(
+	ctx context.Context,
+	poolId,
+	deviceGroupId string,
+) (*v1mpckeys.ListMPCOperationsResponse, error) {
+
 	req := &v1mpckeys.ListMPCOperationsRequest{
 		Parent: fmt.Sprintf("pools/%s/deviceGroups/%s", poolId, deviceGroupId),
 	}
 
 	log.Debugf("listing mpc op request: %v", req)
-	resp, err := waas.GetClients().MpcKeyService.ListMPCOperations(r.Context(), req)
+
+	response, err := waas.GetClients().MpcKeyService.ListMPCOperations(ctx, req)
 	if err != nil {
-		log.Errorf("Cannot list mpc operations: %v", err)
-		utils.HttpBadGateway(w)
-		return
+		return nil, fmt.Errorf("Cannot list mpc operations: %w", err)
 	}
 
-	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
-		log.Errorf("Cannot marshal and write mpc operations response: %v", err)
-		utils.HttpBadGateway(w)
-	}
+	return response, nil
 }
