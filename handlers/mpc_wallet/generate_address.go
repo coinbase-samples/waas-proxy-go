@@ -1,13 +1,13 @@
 package mpc_wallet
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	v1mpcwallets "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/mpc_wallets/v1"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func GenerateAddress(w http.ResponseWriter, r *http.Request) {
@@ -17,8 +17,9 @@ func GenerateAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("unmarshalling generate address request, raw: %s", string(body))
 	req := &v1mpcwallets.GenerateAddressRequest{}
-	if err := json.Unmarshal(body, req); err != nil {
+	if err := protojson.Unmarshal(body, req); err != nil {
 		log.Errorf("unable to unmarshal GenerateAddressRequest request: %v", err)
 		utils.HttpBadRequest(w)
 		return

@@ -11,10 +11,6 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-type ListAddressesResponse struct {
-	Addresses []*v1mpcwallets.Address `json:"addresses,omitempty"`
-}
-
 func ListAddresses(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: This needs to page for the end client - iterator blasts through everything
@@ -58,7 +54,7 @@ func ListAddresses(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Debugf("found addresses: %v", addresses)
-	response := &ListAddressesResponse{Addresses: addresses}
+	response := &v1mpcwallets.ListAddressesResponse{Addresses: addresses}
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
 		log.Errorf("Cannot marshal and write mpc address list response: %v", err)

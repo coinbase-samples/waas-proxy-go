@@ -17,11 +17,12 @@ import (
 var clients *Clients
 
 type Clients struct {
-	BlockchainService *waasv1.BlockchainServiceClient
-	MpcKeyService     *waasv1.MPCKeyServiceClient
-	MpcWalletService  *waasv1.MPCWalletServiceClient
-	PoolService       *waasv1.PoolServiceClient
-	ProtocolService   *waasv1.ProtocolServiceClient
+	BlockchainService     *waasv1.BlockchainServiceClient
+	MpcKeyService         *waasv1.MPCKeyServiceClient
+	MpcWalletService      *waasv1.MPCWalletServiceClient
+	MpcTransactionService *waasv1.MPCTransactionServiceClient
+	PoolService           *waasv1.PoolServiceClient
+	ProtocolService       *waasv1.ProtocolServiceClient
 }
 
 type clientInit struct {
@@ -63,6 +64,10 @@ func InitClients(config config.AppConfig) error {
 	}
 
 	if err := initMpcKeyClient(ctx, init); err != nil {
+		return err
+	}
+
+	if err := initMpcTransactionClient(ctx, init); err != nil {
 		return err
 	}
 
@@ -109,6 +114,17 @@ func initMpcWalletClient(ctx context.Context, init *clientInit) (err error) {
 		init.opts...,
 	); err != nil {
 		err = fmt.Errorf("unable to init WaaS mpc wallet client: %w", err)
+	}
+	return
+}
+
+// initMpcTransactionClient creates a new MPC transaction service client
+func initMpcTransactionClient(ctx context.Context, init *clientInit) (err error) {
+	if init.c.MpcTransactionService, err = waasv1.NewMPCTransactionServiceClient(
+		ctx,
+		init.opts...,
+	); err != nil {
+		err = fmt.Errorf("unable to init WaaS mpc transaction client: %w", err)
 	}
 	return
 }

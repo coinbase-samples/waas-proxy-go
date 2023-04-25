@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/coinbase/waas-client-library-go v0.0.0-20230321152517-535980ca7d4d
 	github.com/ethereum/go-ethereum v1.11.5
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/sirupsen/logrus v1.9.0

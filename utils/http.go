@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 func HttpReadBodyOrSendGatewayTimeout(w http.ResponseWriter, r *http.Request) ([]byte, error) {
@@ -63,7 +65,17 @@ func HttpMarshalAndWriteJsonResponseWithOk(w http.ResponseWriter, v any) error {
 }
 
 func HttpMarshalAndWriteJsonResponseWithStatus(w http.ResponseWriter, v any, status int) error {
-	body, err := json.Marshal(v)
+	protoArg, ok := v.(proto.Message)
+	// TODO: revisit when I can only use proto.Message
+	if !ok {
+		body, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+
+		return HttpWriteJsonResponseWithStatus(w, body, status)
+	}
+	body, err := protojson.Marshal(protoArg)
 	if err != nil {
 		return err
 	}
