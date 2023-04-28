@@ -5,11 +5,42 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
+
+type httpRequestPageInfo struct {
+	Size  int32
+	Token string
+}
+
+const (
+	httpRequestPageInfoTokenParam = "pageToken"
+	httpRequestPageInfoSizeParam  = "pageSize"
+)
+
+func (h httpRequestPageInfo) Passed() bool {
+	return h.Size > 0 || len(h.Token) > 0
+}
+
+func HttpRequestPageInfo(r *http.Request) (pageInfo httpRequestPageInfo, err error) {
+
+	query := r.URL.Query()
+	pageInfo = httpRequestPageInfo{Token: query.Get(httpRequestPageInfoTokenParam)}
+
+	pageSize := query.Get(httpRequestPageInfoSizeParam)
+	if len(pageSize) > 0 {
+		var i int
+		if i, err = strconv.Atoi(pageSize); err == nil && i > 0 {
+			pageInfo.Size = int32(i)
+		}
+	}
+
+	return
+}
 
 func HttpReadBodyOrSendGatewayTimeout(w http.ResponseWriter, r *http.Request) ([]byte, error) {
 	body, err := io.ReadAll(r.Body)
