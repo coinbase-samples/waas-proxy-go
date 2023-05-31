@@ -68,8 +68,6 @@ func CreateMPCTransaction(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("new metadata: %v", metadata)
 	}
 
-	trans, err := resp.Poll(r.Context())
-	log.Debugf("trans: %v", trans)
 	log.Debugf("create mpc result: %v", metadata)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, metadata); err != nil {
 		log.Errorf("Cannot marshal and write create mpc transaction response: %v", err)

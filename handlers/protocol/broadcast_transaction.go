@@ -32,7 +32,11 @@ func BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Debugf("original signed: %s", br.SignedTransaction)
-	encoded, _ := hex.DecodeString(br.SignedTransaction)
+	encoded, err := hex.DecodeString(br.SignedTransaction)
+	//encoded, err := base64.RawStdEncoding.DecodeString(br.SignedTransaction)
+	if err != nil {
+		log.Errorf("issue with decoding hex string: %v")
+	}
 
 	log.Debugf("encoded tx: %s", encoded)
 	req := &v1protocols.BroadcastTransactionRequest{

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
@@ -49,7 +50,14 @@ func listOperations(
 	log.Debugf("listing mpc op request: %v", req)
 
 	response, err := waas.GetClients().MpcKeyService.ListMPCOperations(ctx, req)
-	if err != nil {
+	if err != nil || len(response.MpcOperations) < 1 {
+		for i := 0; i < 10; i++ {
+			time.Sleep(time.Millisecond * 200)
+			response, err := waas.GetClients().MpcKeyService.ListMPCOperations(ctx, req)
+			if err == nil && len(response.MpcOperations) > 0 {
+				return response, nil
+			}
+		}
 		return nil, fmt.Errorf("Cannot list mpc operations: %w", err)
 	}
 

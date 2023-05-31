@@ -82,6 +82,32 @@ func ListBalances(w http.ResponseWriter, r *http.Request) {
 			log.Warnf("Erroring fetching asset details - %v", err)
 			continue
 		}
+
+		bdReq := &v1mpcwallets.ListBalanceDetailsRequest{
+			Parent: b.Name,
+		}
+		it := waas.GetClients().MpcWalletService.ListBalanceDetails(r.Context(), bdReq)
+		if err != nil {
+			log.Warnf("Erroring fetching balance details - %v", err)
+			continue
+		}
+
+		var details []*v1mpcwallets.BalanceDetail
+		for {
+			detail, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+
+			if err != nil {
+				log.Errorf("Cannot iterate details: %v", err)
+				utils.HttpBadGateway(w)
+				return
+			}
+			details = append(details, detail)
+		}
+		log.Debugf("balance details: %v", details)
+
 		filledBalances = append(filledBalances, &Balance{
 			Name:       b.Name,
 			Asset:      b.Asset,
@@ -89,7 +115,7 @@ func ListBalances(w http.ResponseWriter, r *http.Request) {
 			MpcWallet:  b.MpcWallet,
 			Symbol:     asset.AdvertisedSymbol,
 			Decimals:   asset.Decimals,
-			Definition: *asset.Definition,
+			Definition: *details[0].AssetDefinition,
 		})
 	}
 
