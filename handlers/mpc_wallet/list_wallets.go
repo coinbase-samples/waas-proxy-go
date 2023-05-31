@@ -1,8 +1,11 @@
 package mpc_wallet
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
@@ -20,13 +23,37 @@ func ListWallets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := &v1mpcwallets.ListMPCWalletsRequest{
-		Parent: fmt.Sprintf("pools/%s", poolId),
+	params, _ := url.ParseQuery(r.URL.RawQuery)
+	wallets := listWallet(r.Context(), poolId, params.Get("deviceGroup"))
+
+	log.Debugf("found wallets %d", len(wallets))
+
+	if len(wallets) == 0 {
+		for i := 0; i < 10; i++ {
+			time.Sleep(time.Second)
+			log.Debugf("slept, fetching again: %v", time.Now().Unix())
+			wallets = listWallet(r.Context(), poolId, params.Get("deviceGroup"))
+		}
 	}
 
-	iter := waas.GetClients().MpcWalletService.ListMPCWallets(r.Context(), req)
+	response := &v1mpcwallets.ListMPCWalletsResponse{MpcWallets: wallets}
 
+	log.Debugf("returning wallets: %v", response)
+	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
+		log.Errorf("Cannot marshal and write mpc wallet list response: %v", err)
+		utils.HttpBadGateway(w)
+	}
+}
+
+func listWallet(ctx context.Context, poolId, deviceGroup string) []*v1mpcwallets.MPCWallet {
 	var wallets []*v1mpcwallets.MPCWallet
+
+	req := &v1mpcwallets.ListMPCWalletsRequest{
+		Parent:   fmt.Sprintf("pools/%s", poolId),
+		PageSize: 100,
+	}
+
+	iter := waas.GetClients().MpcWalletService.ListMPCWallets(ctx, req)
 	for {
 		wallet, err := iter.Next()
 		if err == iterator.Done {
@@ -35,16 +62,11 @@ func ListWallets(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			log.Errorf("Cannot iterate wallets: %v", err)
-			utils.HttpBadGateway(w)
-			return
+			return wallets
 		}
-		wallets = append(wallets, wallet)
+		if wallet.DeviceGroup == deviceGroup || deviceGroup == "" {
+			wallets = append(wallets, wallet)
+		}
 	}
-
-	response := &v1mpcwallets.ListMPCWalletsResponse{MpcWallets: wallets}
-
-	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write mpc wallet list response: %v", err)
-		utils.HttpBadGateway(w)
-	}
+	return wallets
 }

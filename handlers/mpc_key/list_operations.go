@@ -53,12 +53,13 @@ func listOperations(
 	if err != nil || len(response.MpcOperations) < 1 {
 		for i := 0; i < 10; i++ {
 			time.Sleep(time.Millisecond * 200)
-			response, err := waas.GetClients().MpcKeyService.ListMPCOperations(ctx, req)
+			response, err = waas.GetClients().MpcKeyService.ListMPCOperations(ctx, req)
+			log.Debugf("fetched operations: %v", response)
 			if err == nil && len(response.MpcOperations) > 0 {
 				return response, nil
 			}
 		}
-		return nil, fmt.Errorf("Cannot list mpc operations: %w", err)
+		return nil, fmt.Errorf("cannot list mpc operations: %w", err)
 	}
 
 	return response, nil

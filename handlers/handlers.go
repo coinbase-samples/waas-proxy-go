@@ -37,7 +37,8 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 
 	// MPC keys service
 	router.HandleFunc("/v1/waas/proxy/mpckeys/registerDevice", mpc_key.RegisterDevice).Methods(http.MethodPost)
-	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}", mpc_key.ListOperations).Methods(http.MethodGet)
+	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}", mpc_key.GetDeviceGroup).Methods(http.MethodGet)
+	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/mpcOperations", mpc_key.ListOperations).Methods(http.MethodGet)
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/createSignature/{mpcKeyId}", mpc_key.CreateSignature).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/prepareDeviceArchive", mpc_key.PrepareDeviceArchive).Methods(http.MethodPost)
 
