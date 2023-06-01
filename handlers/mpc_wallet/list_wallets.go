@@ -29,7 +29,7 @@ func ListWallets(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("found wallets %d", len(wallets))
 
 	if len(wallets) == 0 {
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 30; i++ {
 			time.Sleep(time.Second)
 			log.Debugf("slept, fetching again: %v", time.Now().Unix())
 			wallets = listWallet(r.Context(), poolId, params.Get("deviceGroup"))
@@ -52,7 +52,7 @@ func listWallet(ctx context.Context, poolId, deviceGroup string) []*v1mpcwallets
 		Parent:   fmt.Sprintf("pools/%s", poolId),
 		PageSize: 100,
 	}
-
+	count := 0
 	iter := waas.GetClients().MpcWalletService.ListMPCWallets(ctx, req)
 	for {
 		wallet, err := iter.Next()
@@ -67,6 +67,8 @@ func listWallet(ctx context.Context, poolId, deviceGroup string) []*v1mpcwallets
 		if wallet.DeviceGroup == deviceGroup || deviceGroup == "" {
 			wallets = append(wallets, wallet)
 		}
+		count++
 	}
+	log.Debugf("checked %d wallets", count)
 	return wallets
 }
