@@ -47,7 +47,7 @@ func PrepareDeviceArchive(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("prepare device archive raw response: %v", resp)
 
 	meta, _ := resp.Metadata()
-	log.Debugf("device archive metadata", meta)
+	log.Debugf("device archive metadata: %v", meta)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, meta); err != nil {
 		log.Errorf("Cannot marshal and write prepare device archive response: %v", err)

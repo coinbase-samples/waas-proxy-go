@@ -24,17 +24,25 @@ func ListWallets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params, _ := url.ParseQuery(r.URL.RawQuery)
-	wallets := listWallet(r.Context(), poolId, params.Get("deviceGroup"))
+	filterDeviceGroup := params.Get("deviceGroup")
+	log.Debugf("filtering by deviceGroup: %s", filterDeviceGroup)
+	wallets := listWallet(r.Context(), poolId, filterDeviceGroup)
 
 	log.Debugf("found wallets %d", len(wallets))
-
+	start := time.Now().Unix()
 	if len(wallets) == 0 {
-		for i := 0; i < 30; i++ {
+		for i := 0; i < 60; i++ {
 			time.Sleep(time.Second)
-			log.Debugf("slept, fetching again: %v", time.Now().Unix())
-			wallets = listWallet(r.Context(), poolId, params.Get("deviceGroup"))
+			log.Debugf("slept, fetching again: %d", time.Now().Unix())
+			wallets = listWallet(r.Context(), poolId, filterDeviceGroup)
+			if len(wallets) > 0 {
+				break
+			}
 		}
 	}
+	end := time.Now().Unix()
+
+	log.Debugf("time to find wallet: %d", end-start)
 
 	response := &v1mpcwallets.ListMPCWalletsResponse{MpcWallets: wallets}
 
@@ -48,8 +56,10 @@ func ListWallets(w http.ResponseWriter, r *http.Request) {
 func listWallet(ctx context.Context, poolId, deviceGroup string) []*v1mpcwallets.MPCWallet {
 	var wallets []*v1mpcwallets.MPCWallet
 
+	parent := fmt.Sprintf("pools/%s", poolId)
+	log.Debugf("listing wallets under parent: %s", parent)
 	req := &v1mpcwallets.ListMPCWalletsRequest{
-		Parent:   fmt.Sprintf("pools/%s", poolId),
+		Parent:   parent,
 		PageSize: 100,
 	}
 	count := 0
@@ -69,6 +79,6 @@ func listWallet(ctx context.Context, poolId, deviceGroup string) []*v1mpcwallets
 		}
 		count++
 	}
-	log.Debugf("checked %d wallets", count)
+	log.Debugf("checked %d wallets, found %d", count, len(wallets))
 	return wallets
 }

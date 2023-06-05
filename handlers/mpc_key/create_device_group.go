@@ -55,7 +55,7 @@ func createDeviceGroup(
 
 	resp, err := waas.GetClients().MpcKeyService.CreateDeviceGroup(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot list mpc operations: %", err)
+		return nil, fmt.Errorf("cannot create device group: %w", err)
 	}
 
 	metadata, _ := resp.Metadata()

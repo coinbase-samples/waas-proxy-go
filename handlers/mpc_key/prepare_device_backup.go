@@ -47,7 +47,7 @@ func PrepareDeviceBackup(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("prepare device backup raw response: %v", resp)
 
 	meta, _ := resp.Metadata()
-	log.Debugf("device backup metadata", meta)
+	log.Debugf("device backup metadata: %v", meta)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, meta); err != nil {
 		log.Errorf("Cannot marshal and write prepare device backup response: %v", err)

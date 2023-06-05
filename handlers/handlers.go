@@ -42,6 +42,7 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/createSignature/{mpcKeyId}", mpc_key.CreateSignature).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/prepareDeviceArchive", mpc_key.PrepareDeviceArchive).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/prepareDeviceBackup", mpc_key.PrepareDeviceBackup).Methods(http.MethodPost)
+	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/addDevice", mpc_key.AddDevice).Methods(http.MethodPost)
 
 	// Protocol service
 	router.HandleFunc("/v1/waas/proxy/protocols/networks/{networkId}/tx/construct", protocol.ConstructTransaction).Methods(http.MethodPost)
@@ -49,6 +50,7 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 
 	// MPC wallets service
 	router.HandleFunc("/v1/waas/proxy/mpcwallets", mpc_wallet.CreateWallet).Methods(http.MethodPost)
+	router.HandleFunc("/v1/waas/proxy/mpcwallets/wait", mpc_wallet.WaitWallet).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpcwallets/address", mpc_wallet.GenerateAddress).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpcwallets/pools/{poolId}", mpc_wallet.ListWallets).Methods(http.MethodGet)
 	router.HandleFunc("/v1/waas/proxy/mpcwallets/networks/{networkId}/pools/{poolId}/mpcWallets/{mpcWalletId}/addresses", mpc_wallet.ListAddresses).Methods(http.MethodGet)
