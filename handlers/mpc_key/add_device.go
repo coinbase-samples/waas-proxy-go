@@ -1,7 +1,6 @@
 package mpc_key
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -14,8 +13,8 @@ import (
 type AddDeviceResponse struct {
 	// The resource name of the Balance.
 	// Format: operations/{operation_id}
-	Operation   string `json:"operation,omitempty"`
-	DeviceGroup string `json:"deviceGroup,omitempty"`
+	Operation            string   `json:"operation,omitempty"`
+	DeviceGroup          string   `json:"deviceGroup,omitempty"`
 	ParticipatingDevices []string `json:"participatingDevices,omitempty"`
 }
 
@@ -38,20 +37,21 @@ func AddDevice(w http.ResponseWriter, r *http.Request) {
 
 	req := &v1mpckeys.AddDeviceRequest{
 		DeviceGroup: fmt.Sprintf("pools/%s/device/%s", poolId, deviceGroupId),
-		Device: string(body)
+		Device:      string(body),
 	}
 
 	resp, err := waas.GetClients().MpcKeyService.AddDevice(r.Context(), req)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create device group: %w", err)
+		log.Errorf("cannot create device group: %w", err)
+		utils.HttpBadGateway(w)
+		return
 	}
 
 	metadata, _ := resp.Metadata()
 
-	
 	response := &AddDeviceResponse{
-		Operation:   resp.Name(),
-		DeviceGroup: metadata.GetDeviceGroup(),
+		Operation:            resp.Name(),
+		DeviceGroup:          metadata.GetDeviceGroup(),
 		ParticipatingDevices: metadata.GetParticipatingDevices(),
 	}
 
@@ -66,4 +66,3 @@ func AddDevice(w http.ResponseWriter, r *http.Request) {
 		utils.HttpBadGateway(w)
 	}
 }
-
