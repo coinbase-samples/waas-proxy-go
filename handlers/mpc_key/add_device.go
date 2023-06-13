@@ -36,9 +36,11 @@ func AddDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req := &v1mpckeys.AddDeviceRequest{
-		DeviceGroup: fmt.Sprintf("pools/%s/device/%s", poolId, deviceGroupId),
+		DeviceGroup: fmt.Sprintf("pools/%s/deviceGroups/%s", poolId, deviceGroupId),
 		Device:      string(body),
 	}
+
+	log.Debugf("add device request: %v", req)
 
 	resp, err := waas.GetClients().MpcKeyService.AddDevice(r.Context(), req)
 	if err != nil {

@@ -59,7 +59,9 @@ func listOperations(
 				return response, nil
 			}
 		}
-		return nil, fmt.Errorf("cannot list mpc operations: %w", err)
+		if err != nil {
+			return nil, fmt.Errorf("cannot list mpc operations: %w", err)
+		}
 	}
 
 	return response, nil

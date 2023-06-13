@@ -1,7 +1,6 @@
 package mpc_wallet
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
@@ -32,7 +31,7 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 
 	req := &v1mpcwallets.CreateMPCWalletRequest{}
 	if err := protojson.Unmarshal(body, req); err != nil {
-		log.Errorf("unable to unmarshal RegisterDevice request: %v", err)
+		log.Errorf("unable to unmarshal CreateWallet request: %v", err)
 		utils.HttpBadRequest(w)
 		return
 	}
@@ -66,7 +65,7 @@ func WaitWallet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req := &WaitWalletRequest{}
-	if err := json.Unmarshal(body, req); err != nil {
+	if err := protojson.Unmarshal(body, req); err != nil {
 		log.Errorf("unable to unmarshal RegisterDevice request: %v", err)
 		utils.HttpBadRequest(w)
 		return

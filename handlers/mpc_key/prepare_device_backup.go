@@ -1,7 +1,6 @@
 package mpc_key
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	v1mpckeys "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/mpc_keys/v1"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func PrepareDeviceBackup(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +30,7 @@ func PrepareDeviceBackup(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("raw PrepareDeviceBackup body - %v", string(body))
 	req := &v1mpckeys.PrepareDeviceBackupRequest{}
-	if err := json.Unmarshal(body, req); err != nil {
+	if err := protojson.Unmarshal(body, req); err != nil {
 		log.Errorf("Unable to unmarshal PrepareDeviceBackup request: %v", err)
 		utils.HttpBadRequest(w)
 		return

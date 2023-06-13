@@ -2,13 +2,13 @@ package pool
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	v1pools "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/pools/v1"
 )
@@ -21,7 +21,7 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req := &v1pools.CreatePoolRequest{}
-	if err := json.Unmarshal(body, req); err != nil {
+	if err := protojson.Unmarshal(body, req); err != nil {
 		log.Errorf("Unable to unmarshal CreatePool request: %v", err)
 		utils.HttpBadRequest(w)
 		return
