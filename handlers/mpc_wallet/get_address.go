@@ -34,10 +34,10 @@ func GetAddress(w http.ResponseWriter, r *http.Request) {
 		utils.HttpBadGateway(w)
 		return
 	}
-	log.Debugf("generating address raw response: %v", resp)
+	log.Debugf("get address raw response: %v", resp)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
-		log.Errorf("Cannot marshal and write generating address response: %v", err)
+		log.Errorf("Cannot marshal and write get address response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 

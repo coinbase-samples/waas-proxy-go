@@ -19,6 +19,12 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	names := r.URL.Query()["names"]
+	if len(names) > 1 {
+		BatchGetAsset(w, r, networkId, names)
+		return
+	}
+
 	req := &v1blockchain.ListAssetsRequest{
 		Parent: fmt.Sprintf("networks/%s", networkId),
 	}

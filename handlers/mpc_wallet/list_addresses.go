@@ -13,8 +13,6 @@ import (
 
 func ListAddresses(w http.ResponseWriter, r *http.Request) {
 
-	// TODO: This needs to page for the end client - iterator blasts through everything
-
 	poolId := utils.HttpPathVarOrSendBadRequest(w, r, "poolId")
 	if len(poolId) == 0 {
 		return
