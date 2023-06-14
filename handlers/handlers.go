@@ -51,17 +51,19 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 	router.HandleFunc("/v1/waas/proxy/protocols/networks/{networkId}/estimateFee", protocol.EstimateFee).Methods(http.MethodPost)
 
 	// MPC wallets service
+	router.HandleFunc("/v1/waas/proxy/mpcwallets/pools/{poolId}/mpcWallets/{mpcWalletId}", mpc_wallet.GetWallet).Methods(http.MethodGet)
 	router.HandleFunc("/v1/waas/proxy/mpcwallets", mpc_wallet.CreateWallet).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpcwallets/wait", mpc_wallet.WaitWallet).Methods(http.MethodPost)
-	router.HandleFunc("/v1/waas/proxy/mpcwallets/address", mpc_wallet.GenerateAddress).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpcwallets/pools/{poolId}", mpc_wallet.ListWallets).Methods(http.MethodGet)
+	router.HandleFunc("/v1/waas/proxy/mpcwallets/address", mpc_wallet.GenerateAddress).Methods(http.MethodPost)
+	router.HandleFunc("/v1/waas/proxy/mpcwallets/networks/{networkId}/addresses/{addressId}", mpc_wallet.GetAddress).Methods(http.MethodGet)
 	router.HandleFunc("/v1/waas/proxy/mpcwallets/networks/{networkId}/pools/{poolId}/mpcWallets/{mpcWalletId}/addresses", mpc_wallet.ListAddresses).Methods(http.MethodGet)
-	router.HandleFunc("/v1/waas/proxy/mpcwallets/networks/{networkId}/addresses/{addressId}", mpc_wallet.ListBalances).Methods(http.MethodGet)
+	router.HandleFunc("/v1/waas/proxy/mpcwallets/networks/{networkId}/addresses/{addressId}/balance", mpc_wallet.ListBalances).Methods(http.MethodGet)
 
 	// MPC Transactions
 	router.HandleFunc("/v1/waas/proxy/mpctransactions/pools/{poolId}/mpcWallets/{mpcWalletId}", mpc_transaction.CreateMPCTransaction).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpctransactions/pools/{poolId}/mpcWallets/{mpcWalletId}", mpc_transaction.ListMpcTransactions).Methods(http.MethodGet)
-
+	router.HandleFunc("/v1/waas/proxy/mpctransactions/pools/{poolId}/mpcWallets/{mpcWalletId}/mpcTransactions/{mpcTransactionId}", mpc_transaction.GetMpcTransaction).Methods(http.MethodGet)
 }
 
 func registerDefaultHandlers(config config.AppConfig, router *mux.Router) {

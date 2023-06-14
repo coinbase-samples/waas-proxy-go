@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
@@ -9,7 +10,6 @@ import (
 	v1protocols "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/protocols/v1"
 	v1types "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/types/v1"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type broadcastRequest struct {
@@ -25,7 +25,7 @@ func BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	br := &broadcastRequest{}
-	if err := protojson.Unmarshal(body, br); err != nil {
+	if err := json.Unmarshal(body, br); err != nil {
 		log.Errorf("Unable to unmarshal Broadcast request: %v", err)
 		utils.HttpBadRequest(w)
 		return

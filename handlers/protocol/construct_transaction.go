@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -11,7 +12,6 @@ import (
 	v1protocols "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/protocols/v1"
 	v1 "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/types/v1"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func ConstructTransaction(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +27,7 @@ func ConstructTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ethInput := &models.TransactionInput{}
-	if err := protojson.Unmarshal(body, ethInput); err != nil {
+	if err := json.Unmarshal(body, ethInput); err != nil {
 		log.Errorf("Unable to unmarshal ConstructTransaction request: %v", err)
 		utils.HttpBadRequest(w)
 		return
