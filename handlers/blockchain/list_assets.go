@@ -12,6 +12,8 @@ import (
 	v1blockchain "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/blockchain/v1"
 )
 
+var pageSize = 50
+
 func ListAssets(w http.ResponseWriter, r *http.Request) {
 
 	networkId := utils.HttpPathVarOrSendBadRequest(w, r, "networkId")
@@ -20,7 +22,7 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	names := r.URL.Query()["names"]
-	if len(names) > 1 {
+	if len(names) > 0 {
 		BatchGetAsset(w, r, networkId, names)
 		return
 	}
@@ -39,7 +41,7 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 
 	var assets []*v1blockchain.Asset
 	i := 1
-	for i < 50 {
+	for i < pageSize {
 		asset, err := iter.Next()
 		if err == iterator.Done {
 			break

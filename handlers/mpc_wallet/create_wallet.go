@@ -67,11 +67,11 @@ func WaitWallet(w http.ResponseWriter, r *http.Request) {
 
 	req := &WaitWalletRequest{}
 	if err := json.Unmarshal(body, req); err != nil {
-		log.Errorf("unable to unmarshal RegisterDevice request: %v", err)
+		log.Errorf("unable to unmarshal WaitWallet request: %v", err)
 		utils.HttpBadRequest(w)
 		return
 	}
-	log.Debugf("creating wallet: %v", req)
+	log.Debugf("waiting wallet: %v", req)
 
 	resp := waas.GetClients().MpcWalletService.CreateMPCWalletOperation(req.Operation)
 
@@ -89,6 +89,7 @@ func WaitWallet(w http.ResponseWriter, r *http.Request) {
 		Wallet:      newWallet.Name,
 	}
 
+	log.Debugf("raw wait wallet response: %v", wallet)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, wallet); err != nil {
 		log.Errorf("Cannot marshal and write create mpc wallet response: %v", err)
 		utils.HttpBadGateway(w)

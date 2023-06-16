@@ -1,10 +1,10 @@
 package mpc_key
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
@@ -16,6 +16,20 @@ import (
 const (
 	ethDataMessageHashPrefix = "\x19Ethereum Signed Message:\n"
 )
+
+type SignatureResponse struct {
+	// The resource name of the Balance.
+	// Format: operations/{operation_id}
+	Operation      string               `json:"operation,omitempty"`
+	DeviceGroup    string               `json:"deviceGroup,omitempty"`
+	Payload        string               `json:"payload,omitempty"`
+	Signature      *v1mpckeys.Signature `json:"signature,omitempty"`
+	RawTransaction string               `json:"rawTransaction,omitempty"`
+}
+
+type WaitSignatureRequest struct {
+	Operation string `json:"operation,omitempty"`
+}
 
 func CreateSignature(w http.ResponseWriter, r *http.Request) {
 
@@ -65,49 +79,80 @@ func CreateSignature(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Debugf("createSig response: %v", resp)
-	sig, err := resp.Poll(r.Context())
+	meta, err := resp.Metadata()
 	if err != nil {
-		log.Errorf("Cannot poll createSignature: %v", err)
+		log.Errorf("Cannot metadata createSignature: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
 
-	log.Debugf("after poll: %v", sig)
-
-	mpcParent := fmt.Sprintf("pools/%s/deviceGroups/%s", poolId, deviceGroupId)
-	var mpcResp *v1mpckeys.ListMPCOperationsResponse
-	counter := 1
-	for counter < 20 {
-		log.Debugf("listing mpc operations %s: %s", fmt.Sprint(counter), mpcParent)
-		mpcResp, err = waas.GetClients().MpcKeyService.ListMPCOperations(r.Context(), &v1mpckeys.ListMPCOperationsRequest{
-			Parent: mpcParent,
-		})
-
-		log.Debugf("list mpc ops response: %v", mpcResp)
-		if err != nil {
-			log.Errorf("cannot list mpc operations for %s: %v", mpcParent, err)
-			time.Sleep(250 * time.Millisecond)
-			counter = counter + 1
-		}
-
-		if mpcResp != nil && len(mpcResp.MpcOperations) > 0 {
-			break
-		} else {
-			time.Sleep(250 * time.Millisecond)
-			counter = counter + 1
-		}
+	response := &SignatureResponse{
+		Operation:   resp.Name(),
+		DeviceGroup: meta.GetDeviceGroup(),
+		Payload:     string(meta.GetPayload()),
 	}
 
-	if err != nil {
-		log.Errorf("Cannot list mpc operations: %v, parent: %s", err, mpcParent)
-		utils.HttpBadGateway(w)
-		return
-	}
+	log.Debugf("raw response: %v", response)
 
-	log.Debugf("raw response: %v", mpcResp)
-
-	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, mpcResp); err != nil {
+	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
 		log.Errorf("Cannot marshal and write create signature metadata response: %v", err)
+		utils.HttpBadGateway(w)
+	}
+}
+
+func WaitSignature(w http.ResponseWriter, r *http.Request) {
+
+	body, err := utils.HttpReadBodyOrSendGatewayTimeout(w, r)
+	if err != nil {
+		return
+	}
+
+	req := &WaitSignatureRequest{}
+	if err := json.Unmarshal(body, req); err != nil {
+		log.Errorf("unable to unmarshal WaitSignature request: %v", err)
+		utils.HttpBadRequest(w)
+		return
+	}
+	log.Debugf("waiting signature: %v", req)
+
+	resp := waas.GetClients().MpcKeyService.CreateSignatureOperation(req.Operation)
+
+	newSignature, err := resp.Wait(r.Context())
+	if err != nil {
+		log.Errorf("Cannot wait create signature response: %v", err)
+		utils.HttpBadGateway(w)
+		return
+	}
+	log.Debugf("completed signature: %v", newSignature)
+	meta, err := resp.Metadata()
+
+	if err != nil {
+		log.Errorf("Cannot get metadata create signature response: %v", err)
+		utils.HttpBadGateway(w)
+		return
+	}
+	/*
+		ecdsaSig := newSignature.Signature.GetEcdsaSignature()
+		rVal := ecdsaSig.GetR()
+		sVal := ecdsaSig.GetS()
+		vVal := ecdsaSig.GetV()
+		rawTransaction := []byte{}
+		rawTransaction = append(rawTransaction, rVal...)
+		rawTransaction = append(rawTransaction, sVal...)
+		rawTransaction = append(rawTransaction, []byte(vVal)...)
+
+		log.Debugf("rawTransaction: %v", rawTransaction)
+	*/
+	wallet := &SignatureResponse{
+		Operation:   req.Operation,
+		DeviceGroup: meta.GetDeviceGroup(),
+		Payload:     string(meta.GetPayload()),
+		Signature:   newSignature,
+		//RawTransaction: string(rawTransaction),
+	}
+
+	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, wallet); err != nil {
+		log.Errorf("Cannot marshal and write create signature response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }
