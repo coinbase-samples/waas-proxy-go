@@ -1,15 +1,20 @@
 package mpc_key
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
-	"strconv"
 
+	"github.com/coinbase-samples/waas-proxy-go/models"
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	v1mpckeys "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/mpc_keys/v1"
+	common "github.com/ethereum/go-ethereum/common"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,15 +25,17 @@ const (
 type SignatureResponse struct {
 	// The resource name of the Balance.
 	// Format: operations/{operation_id}
-	Operation      string               `json:"operation,omitempty"`
-	DeviceGroup    string               `json:"deviceGroup,omitempty"`
-	Payload        string               `json:"payload,omitempty"`
-	Signature      *v1mpckeys.Signature `json:"signature,omitempty"`
-	RawTransaction string               `json:"rawTransaction,omitempty"`
+	Operation       string               `json:"operation,omitempty"`
+	DeviceGroup     string               `json:"deviceGroup,omitempty"`
+	Payload         string               `json:"payload,omitempty"`
+	Signature       *v1mpckeys.Signature `json:"signature,omitempty"`
+	RawTransaction  string               `json:"rawTransaction,omitempty"`
+	TransactionHash string               `json:"transactionHash,omitempty"`
 }
 
 type WaitSignatureRequest struct {
-	Operation string `json:"operation,omitempty"`
+	Operation   string                  `json:"operation,omitempty"`
+	Transaction models.TransactionInput `json:"transaction,omitempty"`
 }
 
 func CreateSignature(w http.ResponseWriter, r *http.Request) {
@@ -57,17 +64,23 @@ func CreateSignature(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("parent: %s, body: %v", parent, string(body))
 
-	payloadData := string(body)
-	generalMessage := fmt.Sprintf("%s%s", ethDataMessageHashPrefix, strconv.Itoa(len(payloadData)))
-	completePayload := fmt.Sprintf("%s%s", generalMessage, payloadData)
+	/*
+		//TODO: this is required for personal_sign, most likely want to add a body parameter to differentiate
+		payloadData := string(body)
+		generalMessage := fmt.Sprintf("%s%s", ethDataMessageHashPrefix, strconv.Itoa(len(payloadData)))
+		completePayload := fmt.Sprintf("%s%s", generalMessage, payloadData)
 
-	log.Debugf("completePayload: %s", completePayload)
-	payload := []byte(completePayload)
+		log.Debugf("completePayload: %s", completePayload)
+		payload := []byte(completePayload)
 
+	*/
+
+	log.Debugf("payload: %v", string(body))
 	req := &v1mpckeys.CreateSignatureRequest{
 		Parent: parent,
 		Signature: &v1mpckeys.Signature{
-			Payload: crypto.Keccak256(payload),
+			Payload: crypto.Keccak256(body),
+			//Payload: body,
 		},
 	}
 
@@ -92,7 +105,7 @@ func CreateSignature(w http.ResponseWriter, r *http.Request) {
 		Payload:     string(meta.GetPayload()),
 	}
 
-	log.Debugf("raw response: %v", response)
+	log.Debugf("raw create signature response: %v", response)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
 		log.Errorf("Cannot marshal and write create signature metadata response: %v", err)
@@ -131,28 +144,110 @@ func WaitSignature(w http.ResponseWriter, r *http.Request) {
 		utils.HttpBadGateway(w)
 		return
 	}
-	/*
-		ecdsaSig := newSignature.Signature.GetEcdsaSignature()
-		rVal := ecdsaSig.GetR()
-		sVal := ecdsaSig.GetS()
-		vVal := ecdsaSig.GetV()
-		rawTransaction := []byte{}
-		rawTransaction = append(rawTransaction, rVal...)
-		rawTransaction = append(rawTransaction, sVal...)
-		rawTransaction = append(rawTransaction, []byte(vVal)...)
 
-		log.Debugf("rawTransaction: %v", rawTransaction)
-	*/
+	payload := hex.EncodeToString(newSignature.GetPayload())
+
+	var signatureRes []byte
+	signatureRes = append(signatureRes, newSignature.GetSignature().GetEcdsaSignature().GetR()...)
+	signatureRes = append(signatureRes, newSignature.GetSignature().GetEcdsaSignature().GetS()...)
+	signatureRes = append(signatureRes, byte(newSignature.GetSignature().GetEcdsaSignature().GetV()))
+
+	if len(signatureRes) != 65 {
+		log.Errorf("unable to unmarshal signedPayload: %v", err)
+		utils.HttpBadRequest(w)
+		return
+	}
+
+	ethTx, err := parseTransaction(req.Transaction)
+	if err != nil {
+		log.Errorf("unable parse transaction to ethTx: %v", err)
+		utils.HttpBadGateway(w)
+		return
+	}
+
+	signer := ethtypes.NewLondonSigner(ethTx.ChainId())
+
+	// Create a new transaction with the given signature.
+	signedTx, err := ethTx.WithSignature(signer, signatureRes)
+	if err != nil {
+		log.Errorf("unable to combine tx and signature: %v", err)
+		utils.HttpBadGateway(w)
+		return
+	}
+
+	signedPayload, err := signedTx.MarshalBinary()
+	if err != nil {
+		log.Errorf("unable to marshal signed tx: %v", err)
+		utils.HttpBadGateway(w)
+		return
+	}
+
+	rawTransaction := hex.EncodeToString(signedPayload)
+
 	wallet := &SignatureResponse{
-		Operation:   req.Operation,
-		DeviceGroup: meta.GetDeviceGroup(),
-		Payload:     string(meta.GetPayload()),
-		Signature:   newSignature,
-		//RawTransaction: string(rawTransaction),
+		Operation:       req.Operation,
+		DeviceGroup:     meta.GetDeviceGroup(),
+		Payload:         payload,
+		Signature:       newSignature,
+		RawTransaction:  rawTransaction,
+		TransactionHash: signedTx.Hash().String(),
 	}
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, wallet); err != nil {
 		log.Errorf("Cannot marshal and write create signature response: %v", err)
 		utils.HttpBadGateway(w)
 	}
+}
+
+// parseTransaction parses a transaction in bytes to return Transaction, Ethereum Transaction and the hashed payload
+// to sign from the given serialized JSON transaction object.
+func parseTransaction(tx models.TransactionInput) (*ethtypes.Transaction, error) {
+
+	chainID, ok := new(big.Int).SetString(tx.ChainId, 0)
+	if !ok {
+		return nil, fmt.Errorf("invalid chainID %s", tx.ChainId)
+	}
+
+	gasTipCap, ok := new(big.Int).SetString(tx.MaxPriorityFeePerGas, 0)
+	if !ok {
+		return nil, fmt.Errorf("invalid maxPriorityFeePerGas %s", tx.MaxPriorityFeePerGas)
+	}
+
+	gasFeeCap, ok := new(big.Int).SetString(tx.MaxFeePerGas, 0)
+	if !ok {
+		return nil, fmt.Errorf("invalid maxFeePerGas %s", tx.MaxFeePerGas)
+	}
+	// EIP1159 uses toAddress and fromAddress, default to is 0x0000..000
+	toAddress := common.HexToAddress("0x0000000000000000000000000000000000000000")
+
+	log.Debugf("toAddress: %s - %s", toAddress, tx.ToAddress)
+	value, ok := new(big.Int).SetString(tx.Value, 0)
+	if !ok {
+		return nil, fmt.Errorf("invalid value %s", tx.Value)
+	}
+
+	data, err := hex.DecodeString(tx.Data)
+	if err != nil {
+		return nil, errors.Wrap(err, "error decoding transaction data")
+	}
+
+	accessList := ethtypes.AccessList{}
+
+	ethTxData := &ethtypes.DynamicFeeTx{
+		ChainID:    chainID,
+		Nonce:      uint64(tx.Nonce),
+		GasTipCap:  gasTipCap,
+		GasFeeCap:  gasFeeCap,
+		Gas:        uint64(tx.Gas),
+		To:         &toAddress,
+		Value:      value,
+		Data:       data,
+		AccessList: accessList,
+	}
+
+	log.Debugf("ethTxData: %v", ethTxData)
+	ethTx := ethtypes.NewTx(ethTxData)
+	log.Debugf("To address: %v", ethTx.To())
+
+	return ethTx, nil
 }
