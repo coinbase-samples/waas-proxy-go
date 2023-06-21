@@ -22,5 +22,7 @@ type TransactionInput struct {
 	// The native value of the transaction as a "0x"-prefixed hex string or a base-10 number.
 	Value string `json:"value,omitempty"`
 	// The data for the transaction.
-	Data string `json:"data,omitempty"`
+	Data    string `json:"data,omitempty"`
+	Asset   string `json:"asset,omitempty"`
+	Network string `json:"network,omitempty"`
 }

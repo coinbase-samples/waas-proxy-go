@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func ConstructTransaction(w http.ResponseWriter, r *http.Request) {
+func ConstructTransferTransaction(w http.ResponseWriter, r *http.Request) {
 
 	networkId := utils.HttpPathVarOrSendBadRequest(w, r, "networkId")
 	if len(networkId) == 0 {
@@ -30,15 +30,15 @@ func ConstructTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := convert.ConvertEip1559Transaction(ethInput)
+	finalInput, err := convert.ConvertTransferTransaction(ethInput)
 	if err != nil {
 		log.Errorf("Cannot construct transaction: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
 
-	log.Debugf("sending construct transaction: %v", req)
-	tx, err := waas.GetClients().ProtocolService.ConstructTransaction(r.Context(), req)
+	log.Debugf("sending construct transaction: %v", finalInput)
+	tx, err := waas.GetClients().ProtocolService.ConstructTransferTransaction(r.Context(), finalInput)
 	if err != nil {
 		log.Errorf("Cannot construct transaction: %v", err)
 		utils.HttpBadGateway(w)

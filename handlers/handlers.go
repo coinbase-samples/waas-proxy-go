@@ -44,6 +44,7 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 
 	// Protocol service
 	router.HandleFunc("/v1/waas/proxy/protocols/networks/{networkId}/tx/construct", protocol.ConstructTransaction).Methods(http.MethodPost)
+	router.HandleFunc("/v1/waas/proxy/protocols/networks/{networkId}/tx/constructTransfer", protocol.ConstructTransferTransaction).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/protocols/networks/{networkId}/tx/broadcast", protocol.BroadcastTransaction).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/protocols/networks/{networkId}/estimateFee", protocol.EstimateFee).Methods(http.MethodPost)
 
