@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"strconv"
 
 	"github.com/coinbase-samples/waas-proxy-go/models"
 	"github.com/coinbase-samples/waas-proxy-go/utils"
@@ -21,6 +22,11 @@ import (
 const (
 	ethDataMessageHashPrefix = "\x19Ethereum Signed Message:\n"
 )
+
+type SignatureRequest struct {
+	Payload      string `json:"payload,omitempty"`
+	PersonalSign bool   `json:"personalSign,omitempty"`
+}
 
 type SignatureResponse struct {
 	// The resource name of the Balance.
@@ -64,23 +70,29 @@ func CreateSignature(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("parent: %s, body: %v", parent, string(body))
 
-	/*
-		//TODO: this is required for personal_sign, most likely want to add a body parameter to differentiate
-		payloadData := string(body)
+	signReq := &SignatureRequest{}
+	if err := json.Unmarshal(body, signReq); err != nil {
+		log.Errorf("Unable to unmarshal CreateSignature request: %v", err)
+		utils.HttpBadRequest(w)
+		return
+	}
+
+	payload := []byte(signReq.Payload)
+
+	if signReq.PersonalSign {
+		payloadData := string(signReq.Payload)
 		generalMessage := fmt.Sprintf("%s%s", ethDataMessageHashPrefix, strconv.Itoa(len(payloadData)))
 		completePayload := fmt.Sprintf("%s%s", generalMessage, payloadData)
 
 		log.Debugf("completePayload: %s", completePayload)
-		payload := []byte(completePayload)
-
-	*/
+		payload = []byte(completePayload)
+	}
 
 	log.Debugf("payload: %v", string(body))
 	req := &v1mpckeys.CreateSignatureRequest{
 		Parent: parent,
 		Signature: &v1mpckeys.Signature{
-			Payload: crypto.Keccak256(body),
-			//Payload: body,
+			Payload: crypto.Keccak256(payload),
 		},
 	}
 
@@ -218,7 +230,7 @@ func parseTransaction(tx models.TransactionInput) (*ethtypes.Transaction, error)
 		return nil, fmt.Errorf("invalid maxFeePerGas %s", tx.MaxFeePerGas)
 	}
 	// EIP1159 uses toAddress and fromAddress, default to is 0x0000..000
-	toAddress := common.HexToAddress("0x0000000000000000000000000000000000000000")
+	toAddress := common.HexToAddress(tx.To)
 
 	log.Debugf("toAddress: %s - %s", toAddress, tx.ToAddress)
 	value, ok := new(big.Int).SetString(tx.Value, 0)

@@ -18,6 +18,7 @@ type TransactionInput struct {
 	// Note: This is NOT a WaaS Address resource of the form
 	// networks/{networkID}/addresses/{addressID}.
 	ToAddress string `json:"toAddress,omitempty"`
+	To        string `json:"to,omitempty"`
 	// The native value of the transaction as a "0x"-prefixed hex string or a base-10 number.
 	Value string `json:"value,omitempty"`
 	// The data for the transaction.
