@@ -15,7 +15,6 @@ import (
 	common "github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -238,7 +237,7 @@ func parseTransaction(tx models.TransactionInput) (*ethtypes.Transaction, error)
 
 	data, err := hex.DecodeString(tx.Data)
 	if err != nil {
-		return nil, errors.Wrap(err, "error decoding transaction data")
+		return nil, err
 	}
 
 	accessList := ethtypes.AccessList{}

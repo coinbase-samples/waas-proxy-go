@@ -44,7 +44,7 @@ func AddDevice(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := waas.GetClients().MpcKeyService.AddDevice(r.Context(), req)
 	if err != nil {
-		log.Errorf("cannot create device group: %w", err)
+		log.Errorf("cannot create device group: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}

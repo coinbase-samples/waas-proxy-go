@@ -53,6 +53,7 @@ func createDeviceGroup(
 		Parent: fmt.Sprintf("pools/%s/device/%s", poolId, deviceId),
 	}
 
+	log.Debugf("create device group request: %v", req)
 	resp, err := waas.GetClients().MpcKeyService.CreateDeviceGroup(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create device group: %w", err)
@@ -64,6 +65,6 @@ func createDeviceGroup(
 		Operation:   resp.Name(),
 		DeviceGroup: metadata.GetDeviceGroup(),
 	}
-
+	log.Debugf("create device group response: %v", response)
 	return response, nil
 }

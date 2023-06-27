@@ -27,6 +27,7 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("CreatePool request: %v", req)
 	pool, err := createPool(r.Context(), req)
 	if err != nil {
 		log.Error(err)
@@ -34,6 +35,7 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("CreatePool response: %v", pool)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, pool); err != nil {
 		log.Errorf("Cannot marshal and write create pool response: %v", err)
 		utils.HttpBadGateway(w)

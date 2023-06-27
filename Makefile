@@ -61,3 +61,6 @@ update-waas-service:
   --service $(WAAS_PROXY_SVC) \
   --force-new-deployment
 
+.PHONY: start-local
+start-local:
+	@go run cmd/server/main.go

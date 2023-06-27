@@ -21,6 +21,7 @@ func GetNetwork(w http.ResponseWriter, r *http.Request) {
 		Name: fmt.Sprintf("networks/%s", networkId),
 	}
 
+	log.Debugf("GetNetwork request: %v", req)
 	resp, err := waas.GetClients().BlockchainService.GetNetwork(r.Context(), req)
 	if err != nil {
 		utils.HttpBadGateway(w)
@@ -28,6 +29,7 @@ func GetNetwork(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("GetNetwork response: %v", resp)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
 		log.Errorf("Cannot marshal and write get device group response: %v", err)
 		utils.HttpBadGateway(w)

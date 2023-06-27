@@ -17,6 +17,7 @@ func BatchGetAsset(w http.ResponseWriter, r *http.Request, networkId string, nam
 		Names:  names,
 	}
 
+	log.Debugf("BatchGetAssets request: %v", req)
 	resp, err := waas.GetClients().BlockchainService.BatchGetAssets(r.Context(), req)
 	if err != nil {
 		utils.HttpBadGateway(w)
@@ -24,6 +25,7 @@ func BatchGetAsset(w http.ResponseWriter, r *http.Request, networkId string, nam
 		return
 	}
 
+	log.Debugf("BatchGetAssets response: %v", resp)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
 		log.Errorf("Cannot marshal and write get device group response: %v", err)
 		utils.HttpBadGateway(w)

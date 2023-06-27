@@ -15,6 +15,7 @@ func ListNetworks(w http.ResponseWriter, r *http.Request) {
 
 	req := &v1blockchain.ListNetworksRequest{}
 
+	log.Debugf("ListNetworks request: %v", req)
 	iter := waas.GetClients().BlockchainService.ListNetworks(r.Context(), req)
 
 	var networks []*v1blockchain.Network
@@ -35,6 +36,7 @@ func ListNetworks(w http.ResponseWriter, r *http.Request) {
 
 	response := &v1blockchain.ListNetworksResponse{Networks: networks}
 
+	log.Debugf("ListNetworks response: %v", response)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
 		log.Errorf("Cannot marshal and write list networks response: %v", err)
 		utils.HttpBadGateway(w)

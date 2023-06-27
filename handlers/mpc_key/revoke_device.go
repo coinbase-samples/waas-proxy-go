@@ -24,7 +24,7 @@ func RevokeDevice(w http.ResponseWriter, r *http.Request) {
 
 	err = waas.GetClients().MpcKeyService.RevokeDevice(r.Context(), req)
 	if err != nil {
-		log.Errorf("cannot revoke device: %w", err)
+		log.Errorf("cannot revoke device: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}

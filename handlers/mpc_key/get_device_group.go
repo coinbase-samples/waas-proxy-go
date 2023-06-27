@@ -26,6 +26,7 @@ func GetDeviceGroup(w http.ResponseWriter, r *http.Request) {
 		Name: fmt.Sprintf("pools/%s/deviceGroups/%s", poolId, deviceGroupId),
 	}
 
+	log.Debugf("GetDeviceGroup request: %v", req)
 	resp, err := waas.GetClients().MpcKeyService.GetDeviceGroup(r.Context(), req)
 	if err != nil {
 		utils.HttpBadGateway(w)
@@ -33,6 +34,7 @@ func GetDeviceGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("GetDeviceGroup response: %v", resp)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
 		log.Errorf("Cannot marshal and write get device group response: %v", err)
 		utils.HttpBadGateway(w)

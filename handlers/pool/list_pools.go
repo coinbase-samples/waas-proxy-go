@@ -18,6 +18,7 @@ func ListPools(w http.ResponseWriter, r *http.Request) {
 
 	req := &v1pools.ListPoolsRequest{}
 
+	log.Debugf("ListPools request: %v", req)
 	iter := waas.GetClients().PoolService.ListPools(r.Context(), req)
 
 	var pools []*v1pools.Pool
@@ -38,6 +39,7 @@ func ListPools(w http.ResponseWriter, r *http.Request) {
 
 	response := &v1pools.ListPoolsResponse{Pools: pools}
 
+	log.Debugf("ListPools response: %v", response)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
 		log.Errorf("Cannot marshal and write list pools response: %v", err)
 		utils.HttpBadGateway(w)

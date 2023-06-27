@@ -22,6 +22,7 @@ func GetPool(w http.ResponseWriter, r *http.Request) {
 		Name: fmt.Sprintf("pools/%s", poolId),
 	}
 
+	log.Debugf("GetPool request: %v", req)
 	pool, err := waas.GetClients().PoolService.GetPool(r.Context(), req)
 	if err != nil {
 		log.Errorf("Cannot get pool: %v", err)
@@ -29,6 +30,7 @@ func GetPool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("GetPool response: %v", pool)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, pool); err != nil {
 		log.Errorf("Cannot marshal and write get pool response: %v", err)
 		utils.HttpBadGateway(w)

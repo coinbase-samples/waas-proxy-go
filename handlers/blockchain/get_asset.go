@@ -26,6 +26,7 @@ func GetAsset(w http.ResponseWriter, r *http.Request) {
 		Name: fmt.Sprintf("networks/%s/assets/%s", networkId, assetId),
 	}
 
+	log.Debugf("GetAsset request: %v", req)
 	resp, err := waas.GetClients().BlockchainService.GetAsset(r.Context(), req)
 	if err != nil {
 		utils.HttpBadGateway(w)
@@ -33,6 +34,7 @@ func GetAsset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("GetAsset response: %v", resp)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
 		log.Errorf("Cannot marshal and write get device group response: %v", err)
 		utils.HttpBadGateway(w)
