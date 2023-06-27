@@ -16,29 +16,31 @@ func ListNetworks(w http.ResponseWriter, r *http.Request) {
 	req := &v1blockchain.ListNetworksRequest{}
 
 	log.Debugf("ListNetworks request: %v", req)
-	iter := waas.GetClients().BlockchainService.ListNetworks(r.Context(), req)
-
-	var networks []*v1blockchain.Network
-	for {
-		network, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-
-		if err != nil {
-			log.Errorf("Cannot iterate networks: %v", err)
-			utils.HttpBadGateway(w)
-			return
-		}
-
-		networks = append(networks, network)
+	requestPageInfo, err := utils.HttpRequestPageInfo(r)
+	if err != nil {
+		utils.HttpBadRequest(w)
+		return
 	}
 
-	response := &v1blockchain.ListNetworksResponse{Networks: networks}
+	if requestPageInfo.Passed() {
+		req.PageToken = requestPageInfo.Token
+		req.PageSize = requestPageInfo.Size
+	}
+
+	iter := waas.GetClients().BlockchainService.ListNetworks(r.Context(), req)
+
+	_, err = iter.Next()
+	if err != nil && err != iterator.Done {
+		log.Errorf("cannot iterate assets: %v", err)
+		utils.HttpBadGateway(w)
+		return
+	}
+
+	response := iter.Response()
 
 	log.Debugf("ListNetworks response: %v", response)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write list networks response: %v", err)
+		log.Errorf("cannot marshal and write list networks response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

@@ -35,31 +35,35 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 	if len(filter) > 1 {
 		req.Filter = filter
 	}
-	log.Debugf("listing assets: %v", req)
 
-	iter := waas.GetClients().BlockchainService.ListAssets(r.Context(), req)
+	
 
-	var assets []*v1blockchain.Asset
-	i := 1
-	for i < pageSize {
-		asset, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-
-		if err != nil {
-			log.Errorf("Cannot iterate assets: %v", err)
-			utils.HttpBadGateway(w)
-			return
-		}
-
-		assets = append(assets, asset)
-		i++
+	requestPageInfo, err := utils.HttpRequestPageInfo(r)
+	if err != nil {
+		utils.HttpBadRequest(w)
+		return
 	}
 
-	response := &v1blockchain.ListAssetsResponse{Assets: assets}
+	if requestPageInfo.Passed() {
+		req.PageToken = requestPageInfo.Token
+		req.PageSize = requestPageInfo.Size
+	}
+  
+  log.Debugf("listing assets: %v", req)
+	iter := waas.GetClients().BlockchainService.ListAssets(r.Context(), req)
+
+	_, err = iter.Next()
+	if err != nil && err != iterator.Done {
+		log.Errorf("cannot iterate assets: %v", err)
+		utils.HttpBadGateway(w)
+		return
+	}
+
+	response := iter.Response()
+
 
 	log.Debugf("listAssets response: %v", response)
+
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
 		log.Errorf("Cannot marshal and write list assets response: %v", err)
 		utils.HttpBadGateway(w)
