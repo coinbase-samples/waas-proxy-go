@@ -29,8 +29,6 @@ type SignatureRequest struct {
 }
 
 type SignatureResponse struct {
-	// The resource name of the Balance.
-	// Format: operations/{operation_id}
 	Operation       string               `json:"operation,omitempty"`
 	DeviceGroup     string               `json:"deviceGroup,omitempty"`
 	Payload         string               `json:"payload,omitempty"`

@@ -2,7 +2,6 @@ package convert
 
 import (
 	"encoding/hex"
-	"fmt"
 
 	models "github.com/coinbase-samples/waas-proxy-go/models"
 	ethereumpb "github.com/coinbase/waas-client-library-go/gen/go/coinbase/cloud/protocols/ethereum/v1"
@@ -33,7 +32,7 @@ func ConvertEip1559Transaction(t *models.TransactionInput) (*v1protocols.Constru
 	}
 	req := &v1protocols.ConstructTransactionRequest{
 		Input:   input,
-		Network: fmt.Sprintf("networks/%s", t.Network),
+		Network: t.Network,
 	}
 	return req, nil
 }

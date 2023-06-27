@@ -6,6 +6,7 @@ import (
 
 	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/coinbase-samples/waas-proxy-go/handlers/blockchain"
+	"github.com/coinbase-samples/waas-proxy-go/handlers/combined"
 	"github.com/coinbase-samples/waas-proxy-go/handlers/mpc_key"
 	"github.com/coinbase-samples/waas-proxy-go/handlers/mpc_transaction"
 	"github.com/coinbase-samples/waas-proxy-go/handlers/mpc_wallet"
@@ -62,6 +63,10 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 	router.HandleFunc("/v1/waas/proxy/mpctransactions/pools/{poolId}/mpcWallets/{mpcWalletId}", mpc_transaction.CreateMPCTransaction).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpctransactions/pools/{poolId}/mpcWallets/{mpcWalletId}", mpc_transaction.ListMpcTransactions).Methods(http.MethodGet)
 	router.HandleFunc("/v1/waas/proxy/mpctransactions/pools/{poolId}/mpcWallets/{mpcWalletId}/mpcTransactions/{mpcTransactionId}", mpc_transaction.GetMpcTransaction).Methods(http.MethodGet)
+
+	// Combined
+	router.HandleFunc("/v1/waas/proxy/combined/pools/{poolId}/deviceGroups/{deviceGroupId}/mpcKeys/{mpcKeyId}/constructAndSign", combined.ConstructAndSign).Methods(http.MethodPost)
+	router.HandleFunc("/v1/waas/proxy/combined/waitAndBroadcast", combined.WaitSignAndBroadcast).Methods(http.MethodPost)
 }
 
 func registerDefaultHandlers(config config.AppConfig, router *mux.Router) {
