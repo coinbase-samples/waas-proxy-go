@@ -32,7 +32,7 @@ func ListOperations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write mpc operations response: %v", err)
+		log.Errorf("cannot marshal and write mpc operations response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

@@ -64,7 +64,7 @@ func AddDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write create device group response: %v", err)
+		log.Errorf("cannot marshal and write create device group response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

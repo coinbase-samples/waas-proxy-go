@@ -36,7 +36,7 @@ func WaitSignAndBroadcast(w http.ResponseWriter, r *http.Request) {
 
 	newSignature, err := resp.Wait(r.Context())
 	if err != nil {
-		log.Errorf("Cannot wait create signature response: %v", err)
+		log.Errorf("cannot wait create signature response: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -44,7 +44,7 @@ func WaitSignAndBroadcast(w http.ResponseWriter, r *http.Request) {
 
 	transaction, err := convertTransaction(r.Context(), &req.Transaction)
 	if err != nil {
-		log.Errorf("Cannot convert transaction to broadcast: %v", err)
+		log.Errorf("cannot convert transaction to broadcast: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -61,14 +61,14 @@ func WaitSignAndBroadcast(w http.ResponseWriter, r *http.Request) {
 
 	tx, err := waas.GetClients().ProtocolService.BroadcastTransaction(r.Context(), broadcastRequest)
 	if err != nil {
-		log.Errorf("Cannot broadcast tx: %v", err)
+		log.Errorf("cannot broadcast tx: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
 	log.Debugf("broadcast result: %v", tx)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, tx); err != nil {
-		log.Errorf("Cannot marshal and wite broadcast tx response: %v", err)
+		log.Errorf("cannot marshal and wite broadcast tx response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

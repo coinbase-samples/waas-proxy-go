@@ -19,7 +19,7 @@ func RegisterDevice(w http.ResponseWriter, r *http.Request) {
 
 	req := &v1mpckeys.RegisterDeviceRequest{}
 	if err := protojson.Unmarshal(body, req); err != nil {
-		log.Errorf("Unable to unmarshal RegisterDevice request: %v", err)
+		log.Errorf("unable to unmarshal RegisterDevice request: %v", err)
 		utils.HttpBadRequest(w)
 		return
 	}
@@ -27,14 +27,14 @@ func RegisterDevice(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := waas.GetClients().MpcKeyService.RegisterDevice(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot register new device: %v", err)
+		log.Errorf("cannot register new device: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
 	log.Debugf("register device raw response: %v", resp)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
-		log.Errorf("Cannot marshal and write register device response: %v", err)
+		log.Errorf("cannot marshal and write register device response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

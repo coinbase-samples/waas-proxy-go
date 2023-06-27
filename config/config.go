@@ -45,7 +45,7 @@ func Setup(app *AppConfig) error {
 
 	err = viper.Unmarshal(&app)
 	if err != nil {
-		log.Debugf("Cannot parse env file %v", err)
+		log.Debugf("cannot parse env file %v", err)
 	}
 
 	appConfig = app

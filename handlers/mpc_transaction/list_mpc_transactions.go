@@ -38,7 +38,7 @@ func ListMpcTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err != nil {
-			log.Errorf("Cannot iterate transactions: %v", err)
+			log.Errorf("cannot iterate transactions: %v", err)
 			utils.HttpBadGateway(w)
 			return
 		}
@@ -48,7 +48,7 @@ func ListMpcTransactions(w http.ResponseWriter, r *http.Request) {
 	response := &v1mpctransactions.ListMPCTransactionsResponse{MpcTransactions: transactions}
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write mpc wallet list response: %v", err)
+		log.Errorf("cannot marshal and write mpc wallet list response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

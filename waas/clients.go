@@ -80,7 +80,7 @@ func initProtocolClient(ctx context.Context, init *clientInit) (err error) {
 		ctx,
 		init.opts...,
 	); err != nil {
-		err = fmt.Errorf("Unable to init WaaS protocol client: %w", err)
+		err = fmt.Errorf("unable to init WaaS protocol client: %w", err)
 	}
 	return
 }
@@ -91,7 +91,7 @@ func initMpcKeyClient(ctx context.Context, init *clientInit) (err error) {
 		ctx,
 		init.opts...,
 	); err != nil {
-		err = fmt.Errorf("Unable to init WaaS mpc key client: %w", err)
+		err = fmt.Errorf("unable to init WaaS mpc key client: %w", err)
 	}
 	return
 }
@@ -102,7 +102,7 @@ func initBlockchainClient(ctx context.Context, init *clientInit) (err error) {
 		ctx,
 		init.opts...,
 	); err != nil {
-		err = fmt.Errorf("Unable to init WaaS blockchain client: %w", err)
+		err = fmt.Errorf("unable to init WaaS blockchain client: %w", err)
 	}
 	return
 }
@@ -135,7 +135,7 @@ func initPoolClient(ctx context.Context, init *clientInit) (err error) {
 		ctx,
 		init.opts...,
 	); err != nil {
-		err = fmt.Errorf("Unable to init WaaS pool client: %w", err)
+		err = fmt.Errorf("unable to init WaaS pool client: %w", err)
 	}
 	return
 }
@@ -146,7 +146,7 @@ func waasClientDefaults(
 
 	apiPrivateKey, err := base64.StdEncoding.DecodeString(config.ApiPrivateKey)
 	if err != nil {
-		log.Fatalf("Cannot base64 decode private key: %v", err)
+		log.Fatalf("cannot base64 decode private key: %v", err)
 	}
 
 	opts = []waasClients.WaaSClientOption{

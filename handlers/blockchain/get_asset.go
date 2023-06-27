@@ -36,7 +36,7 @@ func GetAsset(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("GetAsset response: %v", resp)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
-		log.Errorf("Cannot marshal and write get device group response: %v", err)
+		log.Errorf("cannot marshal and write get device group response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

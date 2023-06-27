@@ -63,7 +63,7 @@ func ListBalances(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err != nil {
-			log.Errorf("Cannot iterate balances: %v", err)
+			log.Errorf("cannot iterate balances: %v", err)
 			utils.HttpBadGateway(w)
 			return
 		}
@@ -100,7 +100,7 @@ func ListBalances(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if err != nil {
-				log.Errorf("Cannot iterate details: %v", err)
+				log.Errorf("cannot iterate details: %v", err)
 				utils.HttpBadGateway(w)
 				return
 			}
@@ -122,7 +122,7 @@ func ListBalances(w http.ResponseWriter, r *http.Request) {
 	response := &ListBalancesResponse{Balances: filledBalances}
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write mpc wallet list balances response: %v", err)
+		log.Errorf("cannot marshal and write mpc wallet list balances response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

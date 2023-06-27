@@ -24,14 +24,14 @@ func EstimateFee(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("sending estimageFee: %v", req)
 	tx, err := waas.GetClients().ProtocolService.EstimateFee(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot estimateFee: %v", err)
+		log.Errorf("cannot estimateFee: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
 
 	log.Debugf("estimateFee result: %v", tx)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, tx); err != nil {
-		log.Errorf("Cannot marshal and wite construct tx response: %v", err)
+		log.Errorf("cannot marshal and wite construct tx response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 

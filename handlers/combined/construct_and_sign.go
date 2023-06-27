@@ -45,14 +45,14 @@ func ConstructAndSign(w http.ResponseWriter, r *http.Request) {
 
 	ethInput := &models.TransactionInput{}
 	if err := json.Unmarshal(body, ethInput); err != nil {
-		log.Errorf("Unable to unmarshal ConstructTransaction request: %v", err)
+		log.Errorf("unable to unmarshal ConstructTransaction request: %v", err)
 		utils.HttpBadRequest(w)
 		return
 	}
 
 	tx, err := convertTransaction(r.Context(), ethInput)
 	if err != nil {
-		log.Errorf("Cannot convert transaction: %v", err)
+		log.Errorf("cannot convert transaction: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -70,7 +70,7 @@ func ConstructAndSign(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := waas.GetClients().MpcKeyService.CreateSignature(r.Context(), createSigReq)
 	if err != nil {
-		log.Errorf("Cannot createSignature operations: %v", err)
+		log.Errorf("cannot createSignature operations: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -78,7 +78,7 @@ func ConstructAndSign(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("createSig response: %v", resp)
 	meta, err := resp.Metadata()
 	if err != nil {
-		log.Errorf("Cannot metadata createSignature: %v", err)
+		log.Errorf("cannot metadata createSignature: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -92,7 +92,7 @@ func ConstructAndSign(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("raw create signature response: %v", response)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write create signature metadata response: %v", err)
+		log.Errorf("cannot marshal and write create signature metadata response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

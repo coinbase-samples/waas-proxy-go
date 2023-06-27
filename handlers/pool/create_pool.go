@@ -22,7 +22,7 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 
 	req := &v1pools.CreatePoolRequest{}
 	if err := protojson.Unmarshal(body, req); err != nil {
-		log.Errorf("Unable to unmarshal CreatePool request: %v", err)
+		log.Errorf("unable to unmarshal CreatePool request: %v", err)
 		utils.HttpBadRequest(w)
 		return
 	}
@@ -37,7 +37,7 @@ func CreatePool(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("CreatePool response: %v", pool)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, pool); err != nil {
-		log.Errorf("Cannot marshal and write create pool response: %v", err)
+		log.Errorf("cannot marshal and write create pool response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }
@@ -48,7 +48,7 @@ func createPool(
 ) (*v1pools.Pool, error) {
 	pool, err := waas.GetClients().PoolService.CreatePool(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot create pool: %w", err)
+		return nil, fmt.Errorf("cannot create pool: %w", err)
 	}
 	return pool, nil
 }

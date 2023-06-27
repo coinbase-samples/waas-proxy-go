@@ -21,7 +21,7 @@ func main() {
 	var app config.AppConfig
 
 	if err := config.Setup(&app); err != nil {
-		log.Fatalf("Unable to config app: %v", err)
+		log.Fatalf("unable to config app: %v", err)
 	}
 
 	config.LogInit(app)
@@ -35,7 +35,7 @@ func main() {
 	}
 
 	if err := waas.InitClients(app); err != nil {
-		log.Fatalf("Unable to init WaaS clients: %v", err)
+		log.Fatalf("unable to init WaaS clients: %v", err)
 	}
 
 	router := mux.NewRouter()

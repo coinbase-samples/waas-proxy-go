@@ -29,7 +29,7 @@ func ListPools(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err != nil {
-			log.Errorf("Cannot iterate pools: %v", err)
+			log.Errorf("cannot iterate pools: %v", err)
 			utils.HttpBadGateway(w)
 			return
 		}
@@ -41,7 +41,7 @@ func ListPools(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("ListPools response: %v", response)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write list pools response: %v", err)
+		log.Errorf("cannot marshal and write list pools response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

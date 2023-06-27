@@ -44,7 +44,7 @@ func ListAddresses(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err != nil {
-			log.Errorf("Cannot iterate addresses: %v", err)
+			log.Errorf("cannot iterate addresses: %v", err)
 			utils.HttpBadGateway(w)
 			return
 		}
@@ -55,7 +55,7 @@ func ListAddresses(w http.ResponseWriter, r *http.Request) {
 	response := &v1mpcwallets.ListAddressesResponse{Addresses: addresses}
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write mpc address list response: %v", err)
+		log.Errorf("cannot marshal and write mpc address list response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

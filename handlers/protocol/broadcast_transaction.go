@@ -26,7 +26,7 @@ func BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
 
 	br := &broadcastRequest{}
 	if err := json.Unmarshal(body, br); err != nil {
-		log.Errorf("Unable to unmarshal Broadcast request: %v", err)
+		log.Errorf("unable to unmarshal Broadcast request: %v", err)
 		utils.HttpBadRequest(w)
 		return
 	}
@@ -47,14 +47,14 @@ func BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
 
 	tx, err := waas.GetClients().ProtocolService.BroadcastTransaction(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot broadcast tx: %v", err)
+		log.Errorf("cannot broadcast tx: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
 	log.Debugf("broadcast result: %v", tx)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, tx); err != nil {
-		log.Errorf("Cannot marshal and wite broadcast tx response: %v", err)
+		log.Errorf("cannot marshal and wite broadcast tx response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

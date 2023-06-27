@@ -28,14 +28,14 @@ func GenerateAddress(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := waas.GetClients().MpcWalletService.GenerateAddress(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot generate addres: %v", err)
+		log.Errorf("cannot generate addres: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
 	log.Debugf("generating address raw response: %v", resp)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
-		log.Errorf("Cannot marshal and write generating address response: %v", err)
+		log.Errorf("cannot marshal and write generating address response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 

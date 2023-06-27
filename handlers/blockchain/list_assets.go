@@ -36,8 +36,6 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 		req.Filter = filter
 	}
 
-	
-
 	requestPageInfo, err := utils.HttpRequestPageInfo(r)
 	if err != nil {
 		utils.HttpBadRequest(w)
@@ -48,8 +46,8 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 		req.PageToken = requestPageInfo.Token
 		req.PageSize = requestPageInfo.Size
 	}
-  
-  log.Debugf("listing assets: %v", req)
+
+	log.Debugf("listing assets: %v", req)
 	iter := waas.GetClients().BlockchainService.ListAssets(r.Context(), req)
 
 	_, err = iter.Next()
@@ -61,11 +59,10 @@ func ListAssets(w http.ResponseWriter, r *http.Request) {
 
 	response := iter.Response()
 
-
 	log.Debugf("listAssets response: %v", response)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write list assets response: %v", err)
+		log.Errorf("cannot marshal and write list assets response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

@@ -33,7 +33,7 @@ func CreateMPCTransaction(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("raw body: %s", string(body))
 	input := &v1.Transaction{}
 	if err := protojson.Unmarshal(body, input); err != nil {
-		log.Errorf("Unable to unmarshal CreateMPCTransaction request: %v", err)
+		log.Errorf("unable to unmarshal CreateMPCTransaction request: %v", err)
 		utils.HttpBadRequest(w)
 		return
 	}
@@ -55,7 +55,7 @@ func CreateMPCTransaction(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := waas.GetClients().MpcTransactionService.CreateMPCTransaction(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot create mpc transaction: %v", err)
+		log.Errorf("cannot create mpc transaction: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -70,7 +70,7 @@ func CreateMPCTransaction(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("create mpc result: %v", metadata)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, metadata); err != nil {
-		log.Errorf("Cannot marshal and write create mpc transaction response: %v", err)
+		log.Errorf("cannot marshal and write create mpc transaction response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 

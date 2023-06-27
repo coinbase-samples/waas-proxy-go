@@ -31,7 +31,7 @@ func PrepareDeviceBackup(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("raw PrepareDeviceBackup body - %v", string(body))
 	req := &v1mpckeys.PrepareDeviceBackupRequest{}
 	if err := protojson.Unmarshal(body, req); err != nil {
-		log.Errorf("Unable to unmarshal PrepareDeviceBackup request: %v", err)
+		log.Errorf("unable to unmarshal PrepareDeviceBackup request: %v", err)
 		utils.HttpBadRequest(w)
 		return
 	}
@@ -40,7 +40,7 @@ func PrepareDeviceBackup(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := waas.GetClients().MpcKeyService.PrepareDeviceBackup(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot prepare device backup: %v", err)
+		log.Errorf("cannot prepare device backup: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -50,7 +50,7 @@ func PrepareDeviceBackup(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("device backup metadata: %v", meta)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, meta); err != nil {
-		log.Errorf("Cannot marshal and write prepare device backup response: %v", err)
+		log.Errorf("cannot marshal and write prepare device backup response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

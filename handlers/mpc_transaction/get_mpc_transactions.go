@@ -35,14 +35,14 @@ func GetMpcTransaction(w http.ResponseWriter, r *http.Request) {
 	response, err := waas.GetClients().MpcTransactionService.GetMPCTransaction(r.Context(), req)
 
 	if err != nil {
-		log.Errorf("Cannot get transaction: %v", err)
+		log.Errorf("cannot get transaction: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
 	log.Debugf("get transaction raw response: %v", response)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write get mpc wallet response: %v", err)
+		log.Errorf("cannot marshal and write get mpc wallet response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

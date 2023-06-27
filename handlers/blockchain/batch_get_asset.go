@@ -27,7 +27,7 @@ func BatchGetAsset(w http.ResponseWriter, r *http.Request, networkId string, nam
 
 	log.Debugf("BatchGetAssets response: %v", resp)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
-		log.Errorf("Cannot marshal and write get device group response: %v", err)
+		log.Errorf("cannot marshal and write get device group response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

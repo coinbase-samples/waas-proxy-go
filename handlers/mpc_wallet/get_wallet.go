@@ -30,14 +30,14 @@ func GetWallet(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := waas.GetClients().MpcWalletService.GetMPCWallet(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot get wallet: %v", err)
+		log.Errorf("cannot get wallet: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
 	log.Debugf("get wallet raw response: %v", resp)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
-		log.Errorf("Cannot marshal and write get wallet response: %v", err)
+		log.Errorf("cannot marshal and write get wallet response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 

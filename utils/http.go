@@ -120,7 +120,7 @@ func HttpWriteJsonResponseWithStatus(w http.ResponseWriter, body []byte, status 
 	_, err = io.WriteString(w, string(body))
 
 	if err != nil {
-		err = fmt.Errorf("Unable to write json response body %w", err)
+		err = fmt.Errorf("unable to write json response body %w", err)
 	}
 	return
 }

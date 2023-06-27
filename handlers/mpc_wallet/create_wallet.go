@@ -53,7 +53,7 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, wallet); err != nil {
-		log.Errorf("Cannot marshal and write create mpc wallet response: %v", err)
+		log.Errorf("cannot marshal and write create mpc wallet response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }
@@ -78,7 +78,7 @@ func WaitWallet(w http.ResponseWriter, r *http.Request) {
 	newWallet, err := resp.Wait(r.Context())
 
 	if err != nil {
-		log.Errorf("Cannot wait create mpc wallet response: %v", err)
+		log.Errorf("cannot wait create mpc wallet response: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -91,7 +91,7 @@ func WaitWallet(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("raw wait wallet response: %v", wallet)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, wallet); err != nil {
-		log.Errorf("Cannot marshal and write create mpc wallet response: %v", err)
+		log.Errorf("cannot marshal and write create mpc wallet response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

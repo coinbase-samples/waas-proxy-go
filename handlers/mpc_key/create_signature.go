@@ -20,6 +20,7 @@ import (
 
 const (
 	ethDataMessageHashPrefix = "\x19Ethereum Signed Message:\n"
+	signatureLength          = 65
 )
 
 type SignatureRequest struct {
@@ -69,7 +70,7 @@ func CreateSignature(w http.ResponseWriter, r *http.Request) {
 
 	signReq := &SignatureRequest{}
 	if err := json.Unmarshal(body, signReq); err != nil {
-		log.Errorf("Unable to unmarshal CreateSignature request: %v", err)
+		log.Debugf("unable to unmarshal CreateSignature request: %v", err)
 		utils.HttpBadRequest(w)
 		return
 	}
@@ -85,7 +86,7 @@ func CreateSignature(w http.ResponseWriter, r *http.Request) {
 		payload = []byte(completePayload)
 	}
 
-	log.Debugf("payload: %v", string(body))
+	log.Debugf("payload: %v", string(payload))
 	req := &v1mpckeys.CreateSignatureRequest{
 		Parent: parent,
 		Signature: &v1mpckeys.Signature{
@@ -95,7 +96,7 @@ func CreateSignature(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := waas.GetClients().MpcKeyService.CreateSignature(r.Context(), req)
 	if err != nil {
-		log.Errorf("Cannot createSignature operations: %v", err)
+		log.Errorf("cannot createSignature operations: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -103,7 +104,7 @@ func CreateSignature(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("createSig response: %v", resp)
 	meta, err := resp.Metadata()
 	if err != nil {
-		log.Errorf("Cannot metadata createSignature: %v", err)
+		log.Errorf("cannot metadata createSignature: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -117,7 +118,7 @@ func CreateSignature(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("raw create signature response: %v", response)
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write create signature metadata response: %v", err)
+		log.Errorf("cannot marshal and write create signature metadata response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }
@@ -141,7 +142,7 @@ func WaitSignature(w http.ResponseWriter, r *http.Request) {
 
 	newSignature, err := resp.Wait(r.Context())
 	if err != nil {
-		log.Errorf("Cannot wait create signature response: %v", err)
+		log.Errorf("cannot wait create signature response: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -149,7 +150,7 @@ func WaitSignature(w http.ResponseWriter, r *http.Request) {
 	meta, err := resp.Metadata()
 
 	if err != nil {
-		log.Errorf("Cannot get metadata create signature response: %v", err)
+		log.Errorf("cannot get metadata create signature response: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
@@ -161,7 +162,7 @@ func WaitSignature(w http.ResponseWriter, r *http.Request) {
 	signatureRes = append(signatureRes, newSignature.GetSignature().GetEcdsaSignature().GetS()...)
 	signatureRes = append(signatureRes, byte(newSignature.GetSignature().GetEcdsaSignature().GetV()))
 
-	if len(signatureRes) != 65 {
+	if len(signatureRes) != signatureLength {
 		log.Errorf("unable to unmarshal signedPayload: %v", err)
 		utils.HttpBadRequest(w)
 		return
@@ -203,7 +204,7 @@ func WaitSignature(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, wallet); err != nil {
-		log.Errorf("Cannot marshal and write create signature response: %v", err)
+		log.Errorf("cannot marshal and write create signature response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }

@@ -48,7 +48,7 @@ func ListWallets(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("returning wallets: %v", response)
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, response); err != nil {
-		log.Errorf("Cannot marshal and write mpc wallet list response: %v", err)
+		log.Errorf("cannot marshal and write mpc wallet list response: %v", err)
 		utils.HttpBadGateway(w)
 	}
 }
@@ -71,7 +71,7 @@ func listWallet(ctx context.Context, poolId, deviceGroup string) []*v1mpcwallets
 		}
 
 		if err != nil {
-			log.Errorf("Cannot iterate wallets: %v", err)
+			log.Errorf("cannot iterate wallets: %v", err)
 			return wallets
 		}
 		if wallet.DeviceGroup == deviceGroup || deviceGroup == "" {
