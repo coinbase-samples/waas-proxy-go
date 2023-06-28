@@ -51,7 +51,6 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}", mpc_key.GetDeviceGroup).Methods(http.MethodGet)
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/mpcOperations", mpc_key.ListOperations).Methods(http.MethodGet)
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/mpcKeys/{mpcKeyId}/createSignature", mpc_key.CreateSignature).Methods(http.MethodPost)
-	router.HandleFunc("/v1/waas/proxy/mpckeys/createSignature/wait", mpc_key.WaitSignature).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/prepareDeviceArchive", mpc_key.PrepareDeviceArchive).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/prepareDeviceBackup", mpc_key.PrepareDeviceBackup).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/mpckeys/pools/{poolId}/deviceGroups/{deviceGroupId}/addDevice", mpc_key.AddDevice).Methods(http.MethodPost)
