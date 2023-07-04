@@ -25,6 +25,7 @@ import (
 
 	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/coinbase-samples/waas-proxy-go/handlers"
+	"github.com/coinbase-samples/waas-proxy-go/s3"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	ghandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -52,6 +53,8 @@ func main() {
 	if err := waas.InitClients(app); err != nil {
 		log.Fatalf("unable to init WaaS clients: %v", err)
 	}
+
+	s3.InitRepo(context.Background(), &app)
 
 	router := mux.NewRouter()
 

@@ -21,11 +21,13 @@ import (
 )
 
 type AppConfig struct {
-	Env           string `mapstructure:"ENV_NAME"`
-	LogLevel      string `mapstructure:"LOG_LEVEL"`
-	ApiKeyName    string `mapstructure:"COINBASE_CLOUD_API_KEY_NAME"`
-	ApiPrivateKey string `mapstructure:"COINBASE_CLOUD_API_PRIVATE_KEY"`
-	AppUrl        string `mapstructure:"APP_URL"`
+	Env                    string `mapstructure:"ENV_NAME"`
+	LogLevel               string `mapstructure:"LOG_LEVEL"`
+	ApiKeyName             string `mapstructure:"COINBASE_CLOUD_API_KEY_NAME"`
+	ApiPrivateKey          string `mapstructure:"COINBASE_CLOUD_API_PRIVATE_KEY"`
+	AppUrl                 string `mapstructure:"APP_URL"`
+	BucketName             string `mapstructure:"BUCKET_NAME"`
+	PresignedUrlExpiration int64  `mapstructure:"PRESIGNED_URL_EXPIRATION"`
 }
 
 func (a AppConfig) IsLocalEnv() bool {
