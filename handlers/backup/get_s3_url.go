@@ -57,7 +57,7 @@ func GetPresignedS3Url(w http.ResponseWriter, r *http.Request) {
 	resp := &GetPresignedS3UrlResponse{
 		Url: httpReq.URL,
 	}
-	log.Debugf("GetPresignedS3Url response: %v", resp)
+
 	if err := utils.HttpMarshalAndWriteJsonResponseWithOk(w, resp); err != nil {
 		log.Errorf("cannot marshal and write GetPresignedS3UrlResponse: %v", err)
 		utils.HttpBadGateway(w)

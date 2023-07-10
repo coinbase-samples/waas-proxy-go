@@ -83,8 +83,10 @@ func RegisterHandlers(config config.AppConfig, router *mux.Router) {
 	router.HandleFunc("/v1/waas/proxy/combined/pools/{poolId}/deviceGroups/{deviceGroupId}/mpcKeys/{mpcKeyId}/constructAndSign", combined.ConstructAndSign).Methods(http.MethodPost)
 	router.HandleFunc("/v1/waas/proxy/combined/waitAndBroadcast", combined.WaitSignAndBroadcast).Methods(http.MethodPost)
 
-	// S3 Urls
-	router.HandleFunc("/v1/waas/proxy/backup/method/{s3Method}/objectKey/{objectKey}", backup.GetPresignedS3Url).Methods(http.MethodGet)
+	if config.S3Enabled {
+		// S3 Urls
+		router.HandleFunc("/v1/waas/proxy/backup/method/{s3Method}/objectKey/{objectKey}", backup.GetPresignedS3Url).Methods(http.MethodGet)
+	}
 }
 
 func registerDefaultHandlers(config config.AppConfig, router *mux.Router) {

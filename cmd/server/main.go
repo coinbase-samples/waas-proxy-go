@@ -54,7 +54,9 @@ func main() {
 		log.Fatalf("unable to init WaaS clients: %v", err)
 	}
 
-	s3.InitRepo(context.Background(), &app)
+	if app.S3Enabled {
+		s3.InitRepo(context.Background(), &app)
+	}
 
 	router := mux.NewRouter()
 
