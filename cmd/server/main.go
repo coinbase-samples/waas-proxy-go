@@ -23,9 +23,9 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/coinbase-samples/waas-proxy-go/cloud/aws/s3"
 	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/coinbase-samples/waas-proxy-go/handlers"
-	"github.com/coinbase-samples/waas-proxy-go/s3"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
 	ghandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -54,7 +54,7 @@ func main() {
 		log.Fatalf("unable to init WaaS clients: %v", err)
 	}
 
-	if app.S3Enabled {
+	if app.AwsS3Enabled {
 		s3.InitRepo(context.Background(), &app)
 	}
 

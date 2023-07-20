@@ -26,7 +26,7 @@ type AppConfig struct {
 	ApiKeyName             string `mapstructure:"COINBASE_CLOUD_API_KEY_NAME"`
 	ApiPrivateKey          string `mapstructure:"COINBASE_CLOUD_API_PRIVATE_KEY"`
 	AppUrl                 string `mapstructure:"APP_URL"`
-	S3Enabled              bool   `mapstructure:"S3_ENABLED"`
+	AwsS3Enabled           bool   `mapstructure:"AWS_S3_ENABLED"`
 	BucketName             string `mapstructure:"BUCKET_NAME"`
 	PresignedUrlExpiration int64  `mapstructure:"PRESIGNED_URL_EXPIRATION"`
 }

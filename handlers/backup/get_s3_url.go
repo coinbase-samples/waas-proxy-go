@@ -19,7 +19,7 @@ import (
 	"net/http"
 
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
-	"github.com/coinbase-samples/waas-proxy-go/s3"
+	"github.com/coinbase-samples/waas-proxy-go/cloud/aws/s3"
 	"github.com/coinbase-samples/waas-proxy-go/utils"
 	log "github.com/sirupsen/logrus"
 )
