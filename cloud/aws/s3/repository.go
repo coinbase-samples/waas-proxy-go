@@ -57,7 +57,7 @@ func GenerateGetObjectUrl(
 		Bucket: aws.String(repo.App.BucketName),
 		Key:    aws.String(objectKey),
 	}, func(opts *s3.PresignOptions) {
-		opts.Expires = time.Duration(repo.App.PresignedUrlExpiration * int64(time.Second))
+		opts.Expires = time.Duration(repo.App.PresignedUrlExpirationInSec * int64(time.Second))
 	})
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -79,7 +79,7 @@ func GeneratePutObjectUrl(
 		ContentType: aws.String("application/octet-stream"),
 		Key:         aws.String(objectKey),
 	}, func(opts *s3.PresignOptions) {
-		opts.Expires = time.Duration(repo.App.PresignedUrlExpiration * int64(time.Second))
+		opts.Expires = time.Duration(repo.App.PresignedUrlExpirationInSec * int64(time.Second))
 	})
 	if err != nil {
 		return nil, fmt.Errorf(
