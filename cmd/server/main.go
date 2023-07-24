@@ -23,6 +23,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/coinbase-samples/waas-proxy-go/cloud/aws/s3"
 	"github.com/coinbase-samples/waas-proxy-go/config"
 	"github.com/coinbase-samples/waas-proxy-go/handlers"
 	"github.com/coinbase-samples/waas-proxy-go/waas"
@@ -51,6 +52,10 @@ func main() {
 
 	if err := waas.InitClients(app); err != nil {
 		log.Fatalf("unable to init WaaS clients: %v", err)
+	}
+
+	if app.AwsS3Enabled {
+		s3.InitRepo(context.Background(), &app)
 	}
 
 	router := mux.NewRouter()
