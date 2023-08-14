@@ -17,11 +17,9 @@ package waas
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 
 	"github.com/coinbase-samples/waas-proxy-go/config"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/coinbase/waas-client-library-go/auth"
 
@@ -158,17 +156,11 @@ func initPoolClient(ctx context.Context, init *clientInit) (err error) {
 func waasClientDefaults(
 	config config.AppConfig,
 ) (opts []waasClients.WaaSClientOption) {
-
-	apiPrivateKey, err := base64.StdEncoding.DecodeString(config.ApiPrivateKey)
-	if err != nil {
-		log.Fatalf("cannot base64 decode private key: %v", err)
-	}
-
 	opts = []waasClients.WaaSClientOption{
 		waasClients.WithAPIKey(
 			&auth.APIKey{
 				Name:       config.ApiKeyName,
-				PrivateKey: string(apiPrivateKey),
+				PrivateKey: config.ApiPrivateKey,
 			},
 		),
 	}

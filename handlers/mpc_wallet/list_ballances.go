@@ -123,15 +123,17 @@ func ListBalances(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Debugf("balance details: %v", details)
 
-		filledBalances = append(filledBalances, &Balance{
-			Name:       b.Name,
-			Asset:      b.Asset,
-			Amount:     b.Amount,
-			MpcWallet:  b.MpcWallet,
-			Symbol:     asset.AdvertisedSymbol,
-			Decimals:   asset.Decimals,
-			Definition: *details[0].AssetDefinition,
-		})
+		for j := 0; j < len(details); j++ {
+			filledBalances = append(filledBalances, &Balance{
+				Name:       b.Name,
+				Asset:      b.Asset,
+				Amount:     b.Amount,
+				MpcWallet:  b.MpcWallet,
+				Symbol:     asset.AdvertisedSymbol,
+				Decimals:   asset.Decimals,
+				Definition: *details[j].GetAssetDefinition(),
+			})
+		}
 	}
 
 	response := &ListBalancesResponse{Balances: filledBalances}
