@@ -43,7 +43,7 @@ func GenerateAddress(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := waas.GetClients().MpcWalletService.GenerateAddress(r.Context(), req)
 	if err != nil {
-		log.Errorf("cannot generate addres: %v", err)
+		log.Errorf("cannot generate address: %v", err)
 		utils.HttpBadGateway(w)
 		return
 	}
